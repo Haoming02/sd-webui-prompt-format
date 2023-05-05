@@ -1,17 +1,8 @@
 class LeFormatter {
 
-	static injectTxt2ImgButton({
-		onClick
-	}) {
-		const t2i_button = gradioApp().getElementById('txt2img_generate')
-		t2i_button.addEventListener('click', onClick)
-	}
-
-	static injectImg2ImgButton({
-		onClick
-	}) {
-		const i2i_button = gradioApp().getElementById('img2img_generate')
-		i2i_button.addEventListener('click', onClick)
+	static injectButton(id, { onClick }) {
+		const button = gradioApp().getElementById(id)
+		button.addEventListener('click', onClick)
 	}
 
 	static checkbox(text, { onChange }) {
@@ -20,6 +11,7 @@ class LeFormatter {
 		label.style.alignItems = 'center'
 
 		const checkbox = gradioApp().querySelector('input[type=checkbox]').cloneNode()
+		checkbox.checked = false
 		checkbox.addEventListener('change', (event) => {
 			onChange(event.target.checked)
 		})
@@ -35,48 +27,52 @@ class LeFormatter {
 	}
 }
 
+function fixBrackets(input) {
+	return input.replace(' )', ')').replace(' ]', ']').replace('( ', '(').replace('[ ', '[');
+}
 
 onUiLoaded(async () => {
-	this.dedupe = false
+	var dedupe = false
 
-	const tools = document.getElementById('txt2img_tools')
 	const checkbox = LeFormatter.checkbox('Remove Duplicates', {
-		onChange: (checked) => { this.dedupe = checked }
+		onChange: (checked) => { dedupe = checked }
 	})
+
+	const tools = document.getElementById('quicksettings')
 	tools.appendChild(checkbox)
 
-	LeFormatter.injectTxt2ImgButton({
+	LeFormatter.injectButton('txt2img_generate', {
 		onClick: () => {
 			const idP = 'txt2img_prompt'
 			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
 			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceP = this.dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
-			textareaP.value = sentenceP.replace(/\s+/g, ' ').trim();
+			const sentenceP = dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
+			textareaP.value = fixBrackets(sentenceP.replace(/\s+/g, ' ')).trim();
 			updateInput(textareaP)
 
 			const idN = 'txt2img_neg_prompt'
 			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
 			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceN = this.dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
-			textareaN.value = sentenceN.replace(/\s+/g, ' ').trim();
+			const sentenceN = dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
+			textareaN.value = fixBrackets(sentenceN.replace(/\s+/g, ' ')).trim();
 			updateInput(textareaN)
 		}
 	})
 
-	LeFormatter.injectImg2ImgButton({
+	LeFormatter.injectButton('img2img_generate', {
 		onClick: () => {
 			const idP = 'img2img_prompt'
 			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
 			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceP = this.dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
-			textareaP.value = sentenceP.replace(/\s+/g, ' ').trim();
+			const sentenceP = dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
+			textareaP.value = fixBrackets(sentenceP.replace(/\s+/g, ' ')).trim();
 			updateInput(textareaP)
 
 			const idN = 'img2img_neg_prompt'
 			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
 			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceN = this.dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
-			textareaN.value = sentenceN.replace(/\s+/g, ' ').trim();
+			const sentenceN = dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
+			textareaN.value = fixBrackets(sentenceN.replace(/\s+/g, ' ')).trim();
 			updateInput(textareaN)
 		}
 	})
