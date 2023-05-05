@@ -24,12 +24,14 @@ onUiLoaded(async () => {
 			const idP = 'txt2img_prompt'
 			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
 			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			textareaP.value = tagsP.join(', ');
+			const sentenceP = tagsP.join(', ');
+			textareaP.value = sentenceP.replace(/\s+/g, ' ').trim();
 			updateInput(textareaP)
 			const idN = 'txt2img_neg_prompt'
 			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
 			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			textareaN.value = tagsN.join(', ');
+			const sentenceN = tagsN.join(', ');
+			textareaN.value = sentenceN.replace(/\s+/g, ' ').trim();
 			updateInput(textareaN)
 		}
 	})
@@ -39,12 +41,14 @@ onUiLoaded(async () => {
 			const idP = 'img2img_prompt'
 			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
 			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			textareaP.value = tagsP.join(', ');
+			const sentenceP = tagsP.join(', ');
+			textareaP.value = sentenceP.replace(/\s+/g, ' ').trim();
 			updateInput(textareaP)
 			const idN = 'img2img_neg_prompt'
 			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
 			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			textareaN.value = tagsN.join(', ');
+			const sentenceN = tagsN.join(', ');
+			textareaN.value = sentenceN.replace(/\s+/g, ' ').trim();
 			updateInput(textareaN)
 		}
 	})
