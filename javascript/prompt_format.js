@@ -25,15 +25,27 @@ class LeFormatter {
 
 		return label
 	}
+
 }
 
-function fixBrackets(input) {
+function fixBracketComma(input) {
+	return input.replace(',)', '),').replace(',]', '],').replace('(,', ',(').replace('[,', ',[');
+}
+
+function fixBracketSpace(input) {
 	return input.replace(' )', ')').replace(' ]', ']').replace('( ', '(').replace('[ ', '[');
+}
+
+function formatString(input, dedupe) {
+	const tags = fixBracketComma(input).split(',').map(word => word.trim()).filter(word => word !== '');
+	const sentence = dedupe ? [...new Set(tags)].join(', ') : tags.join(', ');
+	return fixBracketSpace(sentence.replace(/\s+/g, ' ')).trim();
 }
 
 onUiLoaded(async () => {
 	var dedupe = false
 
+	// Checkbox
 	const checkbox = LeFormatter.checkbox('Remove Duplicates', {
 		onChange: (checked) => { dedupe = checked }
 	})
@@ -41,39 +53,48 @@ onUiLoaded(async () => {
 	const tools = document.getElementById('quicksettings')
 	tools.appendChild(checkbox)
 
+	// Formatter
 	LeFormatter.injectButton('txt2img_generate', {
 		onClick: () => {
-			const idP = 'txt2img_prompt'
-			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
-			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceP = dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
-			textareaP.value = fixBrackets(sentenceP.replace(/\s+/g, ' ')).trim();
-			updateInput(textareaP)
+			const ids = ['txt2img_prompt', 'txt2img_neg_prompt']
+			const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
 
-			const idN = 'txt2img_neg_prompt'
-			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
-			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceN = dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
-			textareaN.value = fixBrackets(sentenceN.replace(/\s+/g, ' ')).trim();
-			updateInput(textareaN)
+			var lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
+
+			for (let i = 0; i < lines[0].length; i++)
+				lines[0][i] = formatString(lines[0][i], dedupe)
+
+			for (let i = 0; i < lines[1].length; i++)
+				lines[1][i] = formatString(lines[1][i], dedupe)
+
+
+			textAreas[0].value = lines[0].join('\n')
+			updateInput(textAreas[0])
+
+			textAreas[1].value = lines[1].join('\n')
+			updateInput(textAreas[1])
 		}
 	})
 
 	LeFormatter.injectButton('img2img_generate', {
 		onClick: () => {
-			const idP = 'img2img_prompt'
-			const textareaP = gradioApp().getElementById(idP).querySelector('textarea')
-			const tagsP = textareaP.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceP = dedupe ? [...new Set(tagsP)].join(', ') : tagsP.join(', ');
-			textareaP.value = fixBrackets(sentenceP.replace(/\s+/g, ' ')).trim();
-			updateInput(textareaP)
+			const ids = ['img2img_prompt', 'img2img_neg_prompt']
+			const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
 
-			const idN = 'img2img_neg_prompt'
-			const textareaN = gradioApp().getElementById(idN).querySelector('textarea')
-			const tagsN = textareaN.value.split(',').map(word => word.trim()).filter(word => word !== '');
-			const sentenceN = dedupe ? [...new Set(tagsN)].join(', ') : tagsN.join(', ');
-			textareaN.value = fixBrackets(sentenceN.replace(/\s+/g, ' ')).trim();
-			updateInput(textareaN)
+			var lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
+
+			for (let i = 0; i < lines[0].length; i++)
+				lines[0][i] = formatString(lines[0][i], dedupe)
+
+			for (let i = 0; i < lines[1].length; i++)
+				lines[1][i] = formatString(lines[1][i], dedupe)
+
+
+			textAreas[0].value = lines[0].join('\n')
+			updateInput(textAreas[0])
+
+			textAreas[1].value = lines[1].join('\n')
+			updateInput(textAreas[1])
 		}
 	})
 
