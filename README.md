@@ -11,5 +11,6 @@ This is an Extension for the [Automatic1111 Webui](https://github.com/AUTOMATIC1
   - **Note:** Only works for tag-based prompt but not for sentence-based prompt 
     - **eg.** `1girl, solo, smile, 1girl` will become `1girl, solo, smile`
     - **eg.** `a girl smiling, a girl standing` will not be changed
+- You can also toggle `Remove Underscores` to replace all `_` with spaces. *(Some newer anime checkpoints claim to fix the need of using underscores in tags)*
 - Now respect line breaks too
   - **Note:** Dedupe only works within the same line
