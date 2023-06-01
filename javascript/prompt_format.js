@@ -27,6 +27,70 @@ class LeFormatter {
 		return label
 	}
 
+	static injectBracketEscape(id) {
+		const textarea = gradioApp().getElementById(id).querySelector('textarea')
+
+		textarea.addEventListener('keydown', (event) => {
+			if (event.ctrlKey && event.key === '\\') {
+				event.preventDefault()
+
+				let cursorPosition = textarea.selectionStart;
+
+				if (textarea.selectionStart !== textarea.selectionEnd)
+					cursorPosition++
+
+				let result = pf_GrabBrackets(textarea.value, cursorPosition)
+
+				if (result) {
+					const original = textarea.value
+
+					if (result[0] !== 0 && textarea.value[result[0] - 1] === '\\' && textarea.value[result[1] - 1] === '\\') {
+						textarea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1])
+						textarea.selectionStart = result[0] - 1
+						textarea.selectionEnd = result[1] - 1
+					}
+					else {
+						textarea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1])
+						textarea.selectionStart = result[0]
+						textarea.selectionEnd = result[1] + 3
+					}
+
+					updateInput(textarea)
+				}
+			}
+		})
+	}
+
+}
+
+function pf_GrabBrackets(str, index) {
+	let openBracket = -1;
+	let closeBracket = -1;
+
+	for (let i = index; i >= 0; i--) {
+		if (str[i] === '(') {
+			openBracket = i
+			break;
+		}
+		if (str[i] === ')' && i !== index) {
+			break;
+		}
+	}
+
+	for (let i = index; i < str.length; i++) {
+		if (str[i] === ')') {
+			closeBracket = i
+			break;
+		}
+		if (str[i] === '(' && i !== index) {
+			break;
+		}
+	}
+
+	if (openBracket !== -1 && closeBracket !== -1 && openBracket !== closeBracket)
+		return [openBracket, closeBracket];
+	else
+		return null
 }
 
 function fixBracketComma(input) {
@@ -38,7 +102,13 @@ function fixBracketSpace(input) {
 }
 
 function fixBracketEmpty(input) {
-	return input.replace(/\(\)/g, '').replace(/\[\]/g, '')
+	let temp = input.replace(/\(\s+\)/g, '').replace(/\[\s+\]/g, '')
+
+	while (temp.includes('()'))
+		temp = temp.replace(/\(\s*\)/g, '')
+	while (temp.includes('[]'))
+		temp = temp.replace(/\[\s*\]/g, '')
+	return temp
 }
 
 function formatString(input, dedupe, deunderline) {
@@ -48,10 +118,9 @@ function formatString(input, dedupe, deunderline) {
 }
 
 onUiLoaded(async () => {
-	var dedupe = false
-	var deunderline = false
+	let dedupe = false
+	let deunderline = false
 
-	// Checkbox
 	const dedupeCB = LeFormatter.checkbox('Remove Duplicates', {
 		onChange: (checked) => { dedupe = checked }
 	})
@@ -60,7 +129,7 @@ onUiLoaded(async () => {
 		onChange: (checked) => { deunderline = checked }
 	})
 
-	let formatter = document.createElement('div')
+	const formatter = document.createElement('div')
 	formatter.id = 'le-formatter'
 	formatter.style.display = 'flex';
 	formatter.style.flex.direction = 'row';
@@ -71,49 +140,34 @@ onUiLoaded(async () => {
 	const tools = document.getElementById('quicksettings')
 	tools.after(formatter)
 
-	// Formatter
-	LeFormatter.injectButton('txt2img_generate', {
-		onClick: () => {
-			const ids = ['txt2img_prompt', 'txt2img_neg_prompt']
-			const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
+	const Modes = ['txt', 'img']
 
-			var lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
+	Modes.forEach((mode) => {
 
-			for (let i = 0; i < lines[0].length; i++)
-				lines[0][i] = formatString(lines[0][i], dedupe, deunderline)
+		LeFormatter.injectButton(mode + '2img_generate', {
+			onClick: () => {
+				const ids = [mode + '2img_prompt', mode + '2img_neg_prompt']
+				const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
 
-			for (let i = 0; i < lines[1].length; i++)
-				lines[1][i] = formatString(lines[1][i], dedupe, deunderline)
+				let lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
+
+				for (let i = 0; i < lines[0].length; i++)
+					lines[0][i] = formatString(lines[0][i], dedupe, deunderline)
+
+				for (let i = 0; i < lines[1].length; i++)
+					lines[1][i] = formatString(lines[1][i], dedupe, deunderline)
 
 
-			textAreas[0].value = lines[0].join('\n')
-			updateInput(textAreas[0])
+				textAreas[0].value = lines[0].join('\n')
+				updateInput(textAreas[0])
 
-			textAreas[1].value = lines[1].join('\n')
-			updateInput(textAreas[1])
-		}
+				textAreas[1].value = lines[1].join('\n')
+				updateInput(textAreas[1])
+			}
+		})
+
+		LeFormatter.injectBracketEscape(mode + '2img_prompt')
+		LeFormatter.injectBracketEscape(mode + '2img_neg_prompt')
+
 	})
-
-	LeFormatter.injectButton('img2img_generate', {
-		onClick: () => {
-			const ids = ['img2img_prompt', 'img2img_neg_prompt']
-			const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
-
-			var lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
-
-			for (let i = 0; i < lines[0].length; i++)
-				lines[0][i] = formatString(lines[0][i], dedupe)
-
-			for (let i = 0; i < lines[1].length; i++)
-				lines[1][i] = formatString(lines[1][i], dedupe)
-
-
-			textAreas[0].value = lines[0].join('\n')
-			updateInput(textAreas[0])
-
-			textAreas[1].value = lines[1].join('\n')
-			updateInput(textAreas[1])
-		}
-	})
-
 })
