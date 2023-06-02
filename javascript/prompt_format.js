@@ -57,7 +57,7 @@ function injectBracketEscape(id) {
 					textarea.selectionEnd = result[1] + 3
 				}
 
-				updateInput(textarea)
+				// updateInput(textarea)
 			}
 		}
 	})
@@ -166,10 +166,10 @@ onUiLoaded(async () => {
 
 
 				textAreas[0].value = lines[0].join('\n')
-				updateInput(textAreas[0])
+				// updateInput(textAreas[0])
 
 				textAreas[1].value = lines[1].join('\n')
-				updateInput(textAreas[1])
+				// updateInput(textAreas[1])
 			}
 		})
 

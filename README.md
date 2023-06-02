@@ -21,3 +21,6 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   - **Note:** `Remove Duplicates` only checks within the same line
 - [x] **[New]** Pressing `Ctrl + \` to quickly escape the **brackets** of the hovered tag
   - Normally, **brackets** *(parentheses)* are used to increase the weight of a prompt. Therefore, for tags like `mejiro mcqueen (umamusume)`, you will need to escape it like `mejiro mcqueen \(umamusume\)`.
+
+
+<sup><b>Note:</b> This is purely visual. The actual prompt is unchanged until you manually edit the text again.</sup>
