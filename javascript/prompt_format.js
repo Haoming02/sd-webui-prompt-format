@@ -27,40 +27,40 @@ class LeFormatter {
 		return label
 	}
 
-	static injectBracketEscape(id) {
-		const textarea = gradioApp().getElementById(id).querySelector('textarea')
+}
 
-		textarea.addEventListener('keydown', (event) => {
-			if (event.ctrlKey && event.key === '\\') {
-				event.preventDefault()
+function injectBracketEscape(id) {
+	const textarea = gradioApp().getElementById(id).querySelector('textarea')
 
-				let cursorPosition = textarea.selectionStart;
+	textarea.addEventListener('keydown', (event) => {
+		if (event.ctrlKey && event.key === '\\') {
+			event.preventDefault()
 
-				if (textarea.selectionStart !== textarea.selectionEnd)
-					cursorPosition++
+			let cursorPosition = textarea.selectionStart;
 
-				let result = pf_GrabBrackets(textarea.value, cursorPosition)
+			if (textarea.selectionStart !== textarea.selectionEnd)
+				cursorPosition++
 
-				if (result) {
-					const original = textarea.value
+			let result = pf_GrabBrackets(textarea.value, cursorPosition)
 
-					if (result[0] !== 0 && textarea.value[result[0] - 1] === '\\' && textarea.value[result[1] - 1] === '\\') {
-						textarea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1])
-						textarea.selectionStart = result[0] - 1
-						textarea.selectionEnd = result[1] - 1
-					}
-					else {
-						textarea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1])
-						textarea.selectionStart = result[0]
-						textarea.selectionEnd = result[1] + 3
-					}
+			if (result) {
+				const original = textarea.value
 
-					updateInput(textarea)
+				if (result[0] !== 0 && textarea.value[result[0] - 1] === '\\' && textarea.value[result[1] - 1] === '\\') {
+					textarea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1])
+					textarea.selectionStart = result[0] - 1
+					textarea.selectionEnd = result[1] - 1
 				}
-			}
-		})
-	}
+				else {
+					textarea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1])
+					textarea.selectionStart = result[0]
+					textarea.selectionEnd = result[1] + 3
+				}
 
+				updateInput(textarea)
+			}
+		}
+	})
 }
 
 function pf_GrabBrackets(str, index) {
@@ -118,6 +118,11 @@ function formatString(input, dedupe, deunderline) {
 }
 
 onUiLoaded(async () => {
+
+	// SETTINGS
+	const iterations = 1
+	// SETTINGS
+
 	let dedupe = false
 	let deunderline = false
 
@@ -152,10 +157,12 @@ onUiLoaded(async () => {
 				let lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
 
 				for (let i = 0; i < lines[0].length; i++)
-					lines[0][i] = formatString(lines[0][i], dedupe, deunderline)
+					for (let it = 0; it < iterations; it++)
+						lines[0][i] = formatString(lines[0][i], dedupe, deunderline)
 
 				for (let i = 0; i < lines[1].length; i++)
-					lines[1][i] = formatString(lines[1][i], dedupe, deunderline)
+					for (let it = 0; it < iterations; it++)
+						lines[1][i] = formatString(lines[1][i], dedupe, deunderline)
 
 
 				textAreas[0].value = lines[0].join('\n')
@@ -166,8 +173,8 @@ onUiLoaded(async () => {
 			}
 		})
 
-		LeFormatter.injectBracketEscape(mode + '2img_prompt')
-		LeFormatter.injectBracketEscape(mode + '2img_neg_prompt')
+		injectBracketEscape(mode + '2img_prompt')
+		injectBracketEscape(mode + '2img_neg_prompt')
 
 	})
 })
