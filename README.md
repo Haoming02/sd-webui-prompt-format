@@ -1,4 +1,6 @@
-# SD Webui Prompt Format
+﻿# SD Webui Prompt Format
+[English|[中文](README_ZH.md)]
+
 This is an Extension for the [Automatic1111 Webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), which helps formatting prompts.
 
 <p align="center"><img src="Demo.jpg" width=512></p>
@@ -19,8 +21,10 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   - *Some newer anime checkpoints claim to eliminate the need of using underscores*
 - [x] Respect line breaks
   - **Note:** `Remove Duplicates` only checks within the same line
-- [x] **[New]** Pressing `Ctrl + \` to quickly escape the **brackets** of the hovered tag
-  - Normally, **brackets** *(parentheses)* are used to increase the weight of a prompt. Therefore, for tags like `mejiro mcqueen (umamusume)`, you will need to escape it like `mejiro mcqueen \(umamusume\)`.
+- [x] Pressing `Ctrl + \` to quickly escape the **parentheses** of the hovered tag *(the words where the caret is)*
+  - Normally, **parentheses** are used to increase the weight of a prompt. Therefore, for tags like `mejiro mcqueen (umamusume)`, you will need to escape it like `mejiro mcqueen \(umamusume\)`.
+- [X] **[New]** Toggle between auto formatting and manual formatting
+  - In `Auto`: The process is ran whenever you press **Generate**
+  - In `Manual`: The process is only ran when you press the **Format** button
 
-
-<sup><b>Note:</b> This is purely visual. The actual prompt is unchanged until you manually edit the text again.</sup>
+<sup><b>Note:</b> The formatting is purely visual. The actual prompt is unchanged until you manually edit the texts again.</sup>
