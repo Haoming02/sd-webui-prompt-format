@@ -27,4 +27,6 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   - In `Auto`: The process is ran whenever you press **Generate**
   - In `Manual`: The process is only ran when you press the **Format** button
 
+<hr>
+
 <sup><b>Note:</b> The formatting is purely visual. The actual prompt is unchanged until you manually edit the texts again.</sup>
