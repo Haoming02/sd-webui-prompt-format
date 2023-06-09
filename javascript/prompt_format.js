@@ -41,10 +41,14 @@ class LeFormatter {
 
 	static formatString(input, dedupe, removeUnderscore) {
 		// Fix Bracket & Comma
-		input = input.replace(/,\)/g, '),').replace(/,\]/g, '],').replace(/\(,/g, ',(').replace(/\[,/g, ',[')
+		input = input.replace(/,\s*\)/g, '),').replace(/,\s*\]/g, '],').replace(/\(\s*,/g, ',(').replace(/\[\s*,/g, ',[')
 
 		// Remove Commas
-		let tags = input.split(',').map(word => (removeUnderscore ? word.replace(/_/g, ' ').trim() : word.trim())).filter(word => word !== '')
+		let tags = input.split(',').map(word => (removeUnderscore ? word.replace(/_/g, ' ') : word).trim()).filter(word => word !== '')
+
+		// Remove Stray Brackets
+		const patterns = [/^\(+$/, /^\)+$/, /^\[+$/, /^\]+$/];
+		tags = tags.filter(word => !patterns[0].test(word)).filter(word => !patterns[1].test(word)).filter(word => !patterns[2].test(word)).filter(word => !patterns[3].test(word))
 
 		// Remove Duplicate
 		input = dedupe ? [...new Set(tags)].join(', ') : tags.join(', ')
@@ -53,7 +57,7 @@ class LeFormatter {
 		input = input.replace(/\s+/g, ' ')
 
 		// Fix Bracket & Space
-		input = input.replace(/ \)/g, ')').replace(/ \]/g, ']').replace(/\( /g, '(').replace(/\[ /g, '[')
+		input = input.replace(/\s+\)/g, ')').replace(/\s+\]/g, ']').replace(/\(\s+/g, '(').replace(/\[\s+/g, '[')
 
 		// Fix Empty Bracket
 		input = input.replace(/\(\s+\)/g, '').replace(/\[\s+\]/g, '')
@@ -134,6 +138,7 @@ class LeFormatter {
 
 onUiLoaded(async () => {
 	const Modes = ['txt', 'img']
+
 	let autoRun = true
 	let dedupe = false
 	let removeUnderscore = false
@@ -153,7 +158,6 @@ onUiLoaded(async () => {
 				textArea.value = lines.join('\n')
 				updateInput(textArea)
 			})
-
 		}
 	})
 
@@ -164,6 +168,8 @@ onUiLoaded(async () => {
 		}
 	})
 
+	manualBtn.style.display = 'none'
+
 	const dedupeCB = LeFormatter.checkbox('Remove Duplicates', dedupe, {
 		onChange: (checked) => { dedupe = checked }
 	})
@@ -171,8 +177,6 @@ onUiLoaded(async () => {
 	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
 		onChange: (checked) => { removeUnderscore = checked }
 	})
-
-	manualBtn.style.display = 'none'
 
 	const formatter = document.createElement('div')
 	formatter.id = 'le-formatter'
@@ -201,7 +205,7 @@ onUiLoaded(async () => {
 
 				for (let m = 0; m < 2; m++) {
 
-					for (let i = 0; i < lines[0].length; i++)
+					for (let i = 0; i < lines[m].length; i++)
 						lines[m][i] = LeFormatter.formatString(lines[m][i], dedupe, removeUnderscore)
 
 					textAreas[m].value = lines[m].join('\n')
