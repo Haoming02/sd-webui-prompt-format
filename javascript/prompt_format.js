@@ -1,4 +1,11 @@
-class LeFormatter {
+﻿class LeFormatter {
+
+	// === Configs ===
+
+	static UseCN = false;
+	static updateInput = true;
+
+	// === Configs ===
 
 	static manualButton(text, id, { onClick }) {
 		const button = gradioApp().getElementById(id).cloneNode()
@@ -40,6 +47,28 @@ class LeFormatter {
 	}
 
 	static formatString(input, dedupe, removeUnderscore) {
+		// Remove Duplicate
+		if (dedupe) {
+			const temp = input.split(',')
+
+			const cleanArray = []
+			const finalArray = []
+
+			temp.forEach((tag) => {
+				const cleanedTag = tag.replace(/\[|\]|\(|\)|\s+/g, '').trim()
+
+				if (!cleanArray.includes(cleanedTag)) {
+					cleanArray.push(cleanedTag)
+					finalArray.push(tag)
+				} else {
+					finalArray.push(tag.replace(cleanedTag, ''))
+				}
+
+			})
+
+			input = finalArray.join(', ')
+		}
+
 		// Fix Bracket & Comma
 		input = input.replace(/,\s*\)/g, '),').replace(/,\s*\]/g, '],').replace(/\(\s*,/g, ',(').replace(/\[\s*,/g, ',[')
 
@@ -47,14 +76,11 @@ class LeFormatter {
 		let tags = input.split(',').map(word => (removeUnderscore ? word.replace(/_/g, ' ') : word).trim()).filter(word => word !== '')
 
 		// Remove Stray Brackets
-		const patterns = [/^\(+$/, /^\)+$/, /^\[+$/, /^\]+$/];
+		const patterns = [/^\(+$/, /^\)+$/, /^\[+$/, /^\]+$/]
 		tags = tags.filter(word => !patterns[0].test(word)).filter(word => !patterns[1].test(word)).filter(word => !patterns[2].test(word)).filter(word => !patterns[3].test(word))
 
-		// Remove Duplicate
-		input = dedupe ? [...new Set(tags)].join(', ') : tags.join(', ')
-
 		// Remove Spaces
-		input = input.replace(/\s+/g, ' ')
+		input = tags.join(', ').replace(/\s+/g, ' ')
 
 		// Fix Bracket & Space
 		input = input.replace(/\s+\)/g, ')').replace(/\s+\]/g, ']').replace(/\(\s+/g, '(').replace(/\[\s+/g, '[')
@@ -62,12 +88,10 @@ class LeFormatter {
 		// Fix Empty Bracket
 		input = input.replace(/\(\s+\)/g, '').replace(/\[\s+\]/g, '')
 
-		while (input.includes('()'))
-			input = input.replace(/\(\s*\)/g, '')
-		while (input.includes('[]'))
-			input = input.replace(/\[\s*\]/g, '')
+		while (input.match(/\(\s*\)|\[\s*\]/g))
+			input = input.replace(/\(\s*\)|\[\s*\]/g, '')
 
-		return input.trim()
+		return input.split(',').map(word => word.trim()).filter(word => word !== '').join(', ')
 	}
 
 	static grabBrackets(str, index) {
@@ -142,8 +166,9 @@ onUiLoaded(async () => {
 	let autoRun = true
 	let dedupe = false
 	let removeUnderscore = false
+	let refreshInput = LeFormatter.updateInput
 
-	const manualBtn = LeFormatter.manualButton('Format', 'txt2img_generate', {
+	const manualBtn = LeFormatter.manualButton((LeFormatter.UseCN ? '格式化' : 'Format'), 'txt2img_generate', {
 		onClick: () => {
 			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt']
 
@@ -161,21 +186,25 @@ onUiLoaded(async () => {
 		}
 	})
 
-	const autoCB = LeFormatter.checkbox('Auto Format', autoRun, {
+	manualBtn.style.display = 'none'
+
+	const autoCB = LeFormatter.checkbox((LeFormatter.UseCN ? '自動格式化' : 'Auto Format'), autoRun, {
 		onChange: (checked) => {
 			autoRun = checked
 			manualBtn.style.display = autoRun ? 'none' : 'block'
 		}
 	})
 
-	manualBtn.style.display = 'none'
-
-	const dedupeCB = LeFormatter.checkbox('Remove Duplicates', dedupe, {
+	const dedupeCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除重複':'Remove Duplicates'), dedupe, {
 		onChange: (checked) => { dedupe = checked }
 	})
 
-	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
+	const underlineCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除底線':'Remove Underscores'), removeUnderscore, {
 		onChange: (checked) => { removeUnderscore = checked }
+	})
+
+	const refreshCB = LeFormatter.checkbox((LeFormatter.UseCN ? '更新文字' : 'Update Input'), autoRun, {
+		onChange: (checked) => { refreshInput = checked }
 	})
 
 	const formatter = document.createElement('div')
@@ -187,6 +216,7 @@ onUiLoaded(async () => {
 	formatter.appendChild(manualBtn)
 	formatter.appendChild(dedupeCB)
 	formatter.appendChild(underlineCB)
+	formatter.appendChild(refreshCB)
 
 	const tools = document.getElementById('quicksettings')
 	tools.after(formatter)
@@ -209,6 +239,9 @@ onUiLoaded(async () => {
 						lines[m][i] = LeFormatter.formatString(lines[m][i], dedupe, removeUnderscore)
 
 					textAreas[m].value = lines[m].join('\n')
+
+					if (refreshInput)
+						updateInput(textAreas[m])
 				}
 			}
 		})

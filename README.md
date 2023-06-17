@@ -23,10 +23,13 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   - **Note:** `Remove Duplicates` only checks within the same line
 - [x] Pressing `Ctrl + \` to quickly escape the **parentheses** of the hovered tag *(the words where the caret is)*
   - Normally, **parentheses** are used to increase the weight of a prompt. Therefore, for tags like `mejiro mcqueen (umamusume)`, you will need to escape it like `mejiro mcqueen \(umamusume\)`.
-- [X] **[New]** Toggle between auto formatting and manual formatting
+- [x] Toggle between auto formatting and manual formatting
   - In `Auto`: The process is ran whenever you press **Generate**
   - In `Manual`: The process is only ran when you press the **Format** button
+- [x] **[New]** Toggle between auto updating prompts or not[^1]
+  - Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, which means the formatting causes them to trigger
+  - You only really need to disable this if you have the above Extension
+    - You can open `prompt_format.js` and edit this line at the top `static updateInput = true;` to `static updateInput = false;` to save the setting
+  - When `disabled`, the formatting is purely visual. It will only update once you manually edit the prompt again
 
-<hr>
-
-<sup><b>Note:</b> The formatting is purely visual. The actual prompt is unchanged until you manually edit the texts again.</sup>
+[^1]: Due to the implementation being in `JavaScript` instead pf `Python`, the image's metadata will still only be updated in the next generation. This toggle mainly affects when you click `Send to img2img`, will the prompt be already formatted or not, etc.
