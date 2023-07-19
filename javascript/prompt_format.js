@@ -124,6 +124,72 @@
 			return null
 	}
 
+	static injectTagShift(id) {
+		const textarea = gradioApp().getElementById(id).querySelector('textarea')
+
+		textarea.addEventListener('wheel', (event) => {
+			if (event.shiftKey) {
+				event.preventDefault()
+
+				if (textarea.selectionStart !== textarea.selectionEnd)
+					return;
+
+				if (event.deltaY === 0)
+					return;
+
+				const shift = event.deltaY < 0 ? 1 : -1
+				const tags = textarea.value.split(',').map(t => t.trim())
+
+				var cursor = textarea.selectionStart
+
+				var index = 0
+
+				for (let i = 0; i < textarea.selectionStart; i++) {
+					if (textarea.value[i] === ',')
+						index++
+				}
+
+				if (index === 0 && shift === -1)
+					return;
+				if (index === tags.length - 1 && shift === 1)
+					return;
+
+				const shifted = []
+
+				if (shift < 0) {
+					for (let i = 0; i < index - 1; i++)
+						shifted.push(tags[i])
+
+					shifted.push(tags[index])
+					shifted.push(tags[index - 1])
+
+					cursor -= tags[index - 1].length + 2
+
+					for (let i = index + 1; i < tags.length; i++)
+						shifted.push(tags[i])
+				} else {
+					for (let i = 0; i < index; i++)
+						shifted.push(tags[i])
+
+					shifted.push(tags[index + 1])
+					shifted.push(tags[index])
+
+					cursor -= tags[index + 1].length * -1 - 2
+
+					for (let i = index + 2; i < tags.length; i++)
+						shifted.push(tags[i])
+				}
+
+				textarea.value = shifted.join(', ')
+
+				textarea.selectionStart = cursor
+				textarea.selectionEnd = cursor
+
+				updateInput(textarea)
+			}
+		})
+	}
+
 	static injectBracketEscape(id) {
 		const textarea = gradioApp().getElementById(id).querySelector('textarea')
 
@@ -158,7 +224,7 @@
 		})
 	}
 
-} 
+}
 
 onUiLoaded(async () => {
 	const Modes = ['txt', 'img']
@@ -195,11 +261,11 @@ onUiLoaded(async () => {
 		}
 	})
 
-	const dedupeCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除重複':'Remove Duplicates'), dedupe, {
+	const dedupeCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除重複' : 'Remove Duplicates'), dedupe, {
 		onChange: (checked) => { dedupe = checked }
 	})
 
-	const underlineCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除底線':'Remove Underscores'), removeUnderscore, {
+	const underlineCB = LeFormatter.checkbox((LeFormatter.UseCN ? '去除底線' : 'Remove Underscores'), removeUnderscore, {
 		onChange: (checked) => { removeUnderscore = checked }
 	})
 
@@ -248,6 +314,8 @@ onUiLoaded(async () => {
 
 		LeFormatter.injectBracketEscape(mode + '2img_prompt')
 		LeFormatter.injectBracketEscape(mode + '2img_neg_prompt')
+		LeFormatter.injectTagShift(mode + '2img_prompt')
+		LeFormatter.injectTagShift(mode + '2img_neg_prompt')
 
 	})
 })

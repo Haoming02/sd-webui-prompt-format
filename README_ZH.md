@@ -10,7 +10,7 @@
 有時候打字太快，或是從各地東拼西湊咒語，常造成多個重複的空格或逗點。這項插件可以幫忙移除它們。
 
 ## 功能實作
-- [x] **[New]** 你可以打開`prompt_format.js`並把上面的`static UseCN = false;`改成`static UseCN = true;`來套用中文翻譯
+- [x] 你可以打開`prompt_format.js`並把上面的`static UseCN = false;`改成`static UseCN = true;`來套用中文翻譯
 - [x] 在`txt2img`和`img2img`都有用
 - [x] 移除多餘**空格**和**逗點**
 - [x] 修改錯誤的**括弧**
@@ -27,10 +27,11 @@
 - [x] 按下`Auto Format`以在手動與自動間切換
   - `自動`: 每次按下 **生成 (Generate)** 時處裡
   - `手動`: 手動按下`Format`時才處裡
-- [x] **[New]** 按下`Update Input`以開/關格式套用[^1]
+- [x] 按下`Update Input`以開/關格式套用[^1]
   - 有些擴充 *(**如.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* 訂閱文字的編輯事件，意即我的格式化會導致它們啟動
   - 基本上，只有在有安裝上述擴充時才需要關閉這個功能
     - 你可以打開`prompt_format.js`並把上面的`static updateInput = true;`改成`static updateInput = false;`來永久關閉
   - 在`關閉`時，前述的美化只是視覺效果。唯有再次手動編輯後，咒語才會更新
+- [x] **[New]** 使用`Shift + 滾輪`來橫移目前游標所在的單字
 
 [^1]: 由於透過`JavaScript`而非`Python`撰寫，生成圖片的內部資料只會在下一次生成才更新。這個選項主要影響，當你按下`Send to img2img`時所傳送的咒語是否已美化過等等。
