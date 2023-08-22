@@ -53,10 +53,15 @@
 				if (!cleanArray.includes(cleanedTag)) {
 					cleanArray.push(cleanedTag)
 					finalArray.push(tag)
-				} else {
-					finalArray.push(tag.replace(cleanedTag, ''))
+					return
 				}
 
+				if (/^(AND|BREAK)$/.test(cleanedTag)) {
+					finalArray.push(tag)
+					return
+				}
+
+				finalArray.push(tag.replace(cleanedTag, ''))
 			})
 
 			input = finalArray.join(', ')
