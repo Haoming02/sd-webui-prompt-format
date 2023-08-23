@@ -1,4 +1,4 @@
-﻿class LeFormatter {
+class LeFormatter {
 
 	static manualButton(text, id, { onClick }) {
 		const button = gradioApp().getElementById(id).cloneNode()
@@ -228,7 +228,7 @@ onUiLoaded(async () => {
 	const Modes = ['txt', 'img']
 
 	let autoRun = true
-	let dedupe = false
+	let dedupe = true
 	let removeUnderscore = false
 	let refreshInput = null
 
@@ -242,7 +242,7 @@ onUiLoaded(async () => {
 
 	const manualBtn = LeFormatter.manualButton('Format', 'txt2img_generate', {
 		onClick: () => {
-			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt']
+			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt']
 
 			ids.forEach((id) => {
 				const textArea = gradioApp().getElementById(id).querySelector('textarea')
@@ -297,6 +297,22 @@ onUiLoaded(async () => {
 
 				const ids = [mode + '2img_prompt', mode + '2img_neg_prompt']
 				const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
+
+				const hires_id = ['hires_prompt', 'hires_neg_prompt']
+
+				hires_id.forEach((hires_item) => {
+					let textArea = gradioApp().getElementById(hires_item).querySelector('textarea')
+
+					let lines = textArea.value.split('\n')
+
+					for (let i = 0; i < lines.length; i++)
+						lines[i] = LeFormatter.formatString(lines[i], dedupe, removeUnderscore)
+
+					textArea.value = lines.join('\n')
+
+					if (refreshInput)
+						updateInput(textArea)
+				})
 
 				let lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
 
