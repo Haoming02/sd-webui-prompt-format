@@ -1,5 +1,16 @@
 ﻿class LeFormatter {
 
+	static cachedCards = null
+
+	static cacheEmbedding() {
+		this.cachedCards = []
+		const extras = document.getElementById('txt2img_extra_tabs').querySelectorAll('span.name')
+		extras.forEach((card) => {
+			if (card.innerHTML.includes('_'))
+				this.cachedCards.push(card.innerHTML)
+		})
+	}
+
 	static manualButton(text, id, { onClick }) {
 		const button = gradioApp().getElementById(id).cloneNode()
 
@@ -39,6 +50,26 @@
 		return label
 	}
 
+	static removeUnderscoreSmart(remove, tag) {
+		if (!remove)
+			return tag
+
+		const lora = tag.split(':')
+		if (lora.length > 1) {
+			// Is LoRA
+			if (this.cachedCards.includes(lora[1]))
+				return tag
+			else
+				return tag.replace(/_/g, ' ')
+		} else {
+			// Is Embedding
+			if (this.cachedCards.includes(tag))
+				return tag
+			else
+				return tag.replace(/_/g, ' ')
+		}
+	}
+
 	static formatString(input, dedupe, removeUnderscore) {
 		// Remove Duplicate
 		if (dedupe) {
@@ -71,7 +102,7 @@
 		input = input.replace(/,\s*\)/g, '),').replace(/,\s*\]/g, '],').replace(/\(\s*,/g, ',(').replace(/\[\s*,/g, ',[')
 
 		// Remove Commas
-		let tags = input.split(',').map(word => (removeUnderscore ? word.replace(/_/g, ' ') : word).trim()).filter(word => word !== '')
+		let tags = input.split(',').map(word => this.removeUnderscoreSmart(removeUnderscore, word.trim())).filter(word => word !== '')
 
 		// Remove Stray Brackets
 		const patterns = [/^\(+$/, /^\)+$/, /^\[+$/, /^\]+$/]
@@ -272,7 +303,11 @@ onUiLoaded(async () => {
 	})
 
 	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
-		onChange: (checked) => { removeUnderscore = checked }
+		onChange: (checked) => {
+			removeUnderscore = checked
+			if (LeFormatter.cachedCards == null)
+				LeFormatter.cacheEmbedding()
+		}
 	})
 
 	const formatter = document.createElement('div')
