@@ -1,8 +1,9 @@
 class LeFormatter {
 
+	// ===== Cache Embedding & LoRA Prompts =====
 	static cachedCards = null
 
-	static cacheEmbedding() {
+	static cache_Cards() {
 		this.cachedCards = []
 		const extras = document.getElementById('txt2img_extra_tabs').querySelectorAll('span.name')
 		extras.forEach((card) => {
@@ -11,13 +12,17 @@ class LeFormatter {
 		})
 	}
 
-	static manualButton(text, id, { onClick }) {
-		const button = gradioApp().getElementById(id).cloneNode()
+
+	// ===== UI Related =====
+	static manualButton({ onClick }) {
+		const button = gradioApp().getElementById('txt2img_generate').cloneNode()
 
 		button.id = 'manual-format'
 		button.classList.remove('gr-button-lg', 'gr-button-primary', 'lg', 'primary')
 		button.classList.add('secondary')
-		button.textContent = text
+		button.style.borderRadius = '0.5em'
+		button.textContent = 'Format'
+
 		button.addEventListener('click', onClick)
 
 		return button
@@ -28,14 +33,16 @@ class LeFormatter {
 		button.addEventListener('click', onClick)
 	}
 
-	static checkbox(text, def, { onChange }) {
+	static checkbox(text, default_value, { onChange }) {
 		const label = document.createElement('label')
+
 		label.style.display = 'flex'
 		label.style.alignItems = 'center'
 		label.style.margin = '2px 8px'
 
 		const checkbox = gradioApp().querySelector('input[type=checkbox]').cloneNode()
-		checkbox.checked = def
+
+		checkbox.checked = default_value
 		checkbox.addEventListener('change', (event) => {
 			onChange(event.target.checked)
 		})
@@ -50,24 +57,33 @@ class LeFormatter {
 		return label
 	}
 
+	// ===== Main Format Logics =====
+	static formatPipeline(id, dedupe, removeUnderscore, autoRefresh) {
+		const textArea = gradioApp().getElementById(id).querySelector('textarea')
+
+		let lines = textArea.value.split('\n')
+
+		for (let i = 0; i < lines.length; i++)
+			lines[i] = LeFormatter.formatString(lines[i], dedupe, removeUnderscore)
+
+		textArea.value = lines.join('\n')
+		if (autoRefresh)
+			updateInput(textArea)
+	}
+
 	static removeUnderscoreSmart(remove, tag) {
 		if (!remove)
 			return tag
 
-		const lora = tag.split(':')
-		if (lora.length > 1) {
-			// Is LoRA
-			if (this.cachedCards.includes(lora[1]))
-				return tag
-			else
-				return tag.replace(/_/g, ' ')
-		} else {
-			// Is Embedding
-			if (this.cachedCards.includes(tag))
-				return tag
-			else
-				return tag.replace(/_/g, ' ')
+		// [start:end:step] OR <lora:name:str>
+		const chucks = tag.split(':').map(c => c.trim())
+
+		for (let i = 0; i < chucks.length; i++) {
+			if (!this.cachedCards.includes(chucks[i]))
+				chucks[i] = chucks[i].replace(/_/g, ' ')
 		}
+
+		return chucks.join(':')
 	}
 
 	static formatString(input, dedupe, removeUnderscore) {
@@ -81,15 +97,15 @@ class LeFormatter {
 			temp.forEach((tag) => {
 				const cleanedTag = tag.replace(/\[|\]|\(|\)|\s+/g, '').trim()
 
+				if (/^(AND|BREAK)$/.test(cleanedTag)) {
+					finalArray.push(cleanedTag)
+					return;
+				}
+
 				if (!cleanArray.includes(cleanedTag)) {
 					cleanArray.push(cleanedTag)
 					finalArray.push(tag)
-					return
-				}
-
-				if (/^(AND|BREAK)$/.test(cleanedTag)) {
-					finalArray.push(tag)
-					return
+					return;
 				}
 
 				finalArray.push(tag.replace(cleanedTag, ''))
@@ -253,6 +269,11 @@ class LeFormatter {
 		})
 	}
 
+	// ===== Load Settings =====
+	static shouldRefresh() {
+		const config = gradioApp().getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]')
+		return !config.checked
+	}
 }
 
 onUiLoaded(async () => {
@@ -261,31 +282,11 @@ onUiLoaded(async () => {
 	let autoRun = true
 	let dedupe = true
 	let removeUnderscore = false
-	let refreshInput = null
 
-	try {
-		const temp = gradioApp().getElementById('pf-config-true')
-		temp.remove()
-		refreshInput = false
-	} catch {
-		refreshInput = true
-	}
-
-	const manualBtn = LeFormatter.manualButton('Format', 'txt2img_generate', {
+	const manualBtn = LeFormatter.manualButton({
 		onClick: () => {
 			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt']
-
-			ids.forEach((id) => {
-				const textArea = gradioApp().getElementById(id).querySelector('textarea')
-
-				let lines = textArea.value.split('\n')
-
-				for (let i = 0; i < lines.length; i++)
-					lines[i] = LeFormatter.formatString(lines[i], dedupe, removeUnderscore)
-
-				textArea.value = lines.join('\n')
-				updateInput(textArea)
-			})
+			ids.forEach((id) => formatPipeline(id, dedupe, removeUnderscore, true))
 		}
 	})
 
@@ -306,7 +307,7 @@ onUiLoaded(async () => {
 		onChange: (checked) => {
 			removeUnderscore = checked
 			if (LeFormatter.cachedCards == null)
-				LeFormatter.cacheEmbedding()
+				LeFormatter.cache_Cards()
 		}
 	})
 
@@ -331,35 +332,11 @@ onUiLoaded(async () => {
 					return;
 
 				const ids = [mode + '2img_prompt', mode + '2img_neg_prompt']
-				const textAreas = [gradioApp().getElementById(ids[0]).querySelector('textarea'), gradioApp().getElementById(ids[1]).querySelector('textarea')]
+				ids.forEach((ID) => LeFormatter.formatPipeline(ID, dedupe, removeUnderscore, LeFormatter.shouldRefresh()))
 
-				const hires_id = ['hires_prompt', 'hires_neg_prompt']
-
-				hires_id.forEach((hires_item) => {
-					let textArea = gradioApp().getElementById(hires_item).querySelector('textarea')
-
-					let lines = textArea.value.split('\n')
-
-					for (let i = 0; i < lines.length; i++)
-						lines[i] = LeFormatter.formatString(lines[i], dedupe, removeUnderscore)
-
-					textArea.value = lines.join('\n')
-
-					if (refreshInput)
-						updateInput(textArea)
-				})
-
-				let lines = [textAreas[0].value.split('\n'), textAreas[1].value.split('\n')]
-
-				for (let m = 0; m < 2; m++) {
-
-					for (let i = 0; i < lines[m].length; i++)
-						lines[m][i] = LeFormatter.formatString(lines[m][i], dedupe, removeUnderscore)
-
-					textAreas[m].value = lines[m].join('\n')
-
-					if (refreshInput)
-						updateInput(textAreas[m])
+				if (mode === 'txt') {
+					const hires_id = ['hires_prompt', 'hires_neg_prompt']
+					hires_id.forEach((hID) => LeFormatter.formatPipeline(hID, dedupe, removeUnderscore, LeFormatter.shouldRefresh()))
 				}
 			}
 		})
@@ -368,6 +345,10 @@ onUiLoaded(async () => {
 		LeFormatter.injectBracketEscape(mode + '2img_neg_prompt')
 		LeFormatter.injectTagShift(mode + '2img_prompt')
 		LeFormatter.injectTagShift(mode + '2img_neg_prompt')
-
 	})
+
+	LeFormatter.injectBracketEscape('hires_prompt')
+	LeFormatter.injectBracketEscape('hires_neg_prompt')
+	LeFormatter.injectTagShift('hires_prompt')
+	LeFormatter.injectTagShift('hires_neg_prompt')
 })
