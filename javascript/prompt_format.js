@@ -59,14 +59,14 @@ class LeFormatter {
 
 	// ===== Main Format Logics =====
 	static formatPipeline(id, dedupe, removeUnderscore, autoRefresh) {
-	    const textAreaElement = gradioApp().getElementById(id);
+		const textAreaElement = gradioApp().getElementById(id);
 
-	    if (!textAreaElement) {
-	        console.log(`Could not find element with id ${id}`);
-            return;
-	    }
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
 
-		const textArea = textAreaElement.querySelector('textarea')
+		const textArea = textAreaElement.querySelector('textarea');
 
 		let lines = textArea.value.split('\n')
 
@@ -179,12 +179,12 @@ class LeFormatter {
 	static injectTagShift(id) {
 		const textAreaElement = gradioApp().getElementById(id);
 
-	    if (!textAreaElement) {
-	        console.log(`Could not find element with id ${id}`);
-            return;
-	    }
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
 
-		const textarea = textAreaElement.querySelector('textarea')
+		const textarea = textAreaElement.querySelector('textarea');
 
 		textarea.addEventListener('wheel', (event) => {
 			if (event.shiftKey) {
@@ -250,14 +250,14 @@ class LeFormatter {
 	}
 
 	static injectBracketEscape(id) {
-        const textAreaElement = gradioApp().getElementById(id);
+		const textAreaElement = gradioApp().getElementById(id);
 
-	    if (!textAreaElement) {
-	        console.log(`Could not find element with id ${id}`);
-            return;
-	    }
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
 
-		const textarea = textAreaElement.querySelector('textarea')
+		const textarea = textAreaElement.querySelector('textarea');
 
 		textarea.addEventListener('keydown', (event) => {
 			if (event.ctrlKey && event.key === '\\') {
