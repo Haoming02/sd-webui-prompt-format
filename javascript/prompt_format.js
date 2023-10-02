@@ -59,7 +59,14 @@ class LeFormatter {
 
 	// ===== Main Format Logics =====
 	static formatPipeline(id, dedupe, removeUnderscore, autoRefresh) {
-		const textArea = gradioApp().getElementById(id).querySelector('textarea')
+		const textAreaElement = gradioApp().getElementById(id);
+
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
+
+		const textArea = textAreaElement.querySelector('textarea');
 
 		let lines = textArea.value.split('\n')
 
@@ -170,7 +177,14 @@ class LeFormatter {
 	}
 
 	static injectTagShift(id) {
-		const textarea = gradioApp().getElementById(id).querySelector('textarea')
+		const textAreaElement = gradioApp().getElementById(id);
+
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
+
+		const textarea = textAreaElement.querySelector('textarea');
 
 		textarea.addEventListener('wheel', (event) => {
 			if (event.shiftKey) {
@@ -236,7 +250,14 @@ class LeFormatter {
 	}
 
 	static injectBracketEscape(id) {
-		const textarea = gradioApp().getElementById(id).querySelector('textarea')
+		const textAreaElement = gradioApp().getElementById(id);
+
+		if (!textAreaElement) {
+			console.log(`Could not find element with id ${id}`);
+			return;
+		}
+
+		const textarea = textAreaElement.querySelector('textarea');
 
 		textarea.addEventListener('keydown', (event) => {
 			if (event.ctrlKey && event.key === '\\') {
@@ -286,7 +307,7 @@ onUiLoaded(async () => {
 	const manualBtn = LeFormatter.manualButton({
 		onClick: () => {
 			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt']
-			ids.forEach((id) => formatPipeline(id, dedupe, removeUnderscore, true))
+			ids.forEach((id) => LeFormatter.formatPipeline(id, dedupe, removeUnderscore, true))
 		}
 	})
 
