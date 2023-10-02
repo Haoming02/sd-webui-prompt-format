@@ -5,13 +5,13 @@ class LeFormatter {
 
 	static cache_Cards() {
 		this.cachedCards = []
+
 		const extras = document.getElementById('txt2img_extra_tabs').querySelectorAll('span.name')
 		extras.forEach((card) => {
 			if (card.innerHTML.includes('_'))
 				this.cachedCards.push(card.innerHTML)
 		})
 	}
-
 
 	// ===== UI Related =====
 	static manualButton({ onClick }) {
@@ -59,14 +59,14 @@ class LeFormatter {
 
 	// ===== Main Format Logics =====
 	static formatPipeline(id, dedupe, removeUnderscore, autoRefresh) {
-		const textAreaElement = gradioApp().getElementById(id);
+		let textArea = null
 
-		if (!textAreaElement) {
-			console.log(`Could not find element with id ${id}`);
+		try {
+			textArea = gradioApp().getElementById(id).querySelector('textarea')
+		}
+		catch {
 			return;
 		}
-
-		const textArea = textAreaElement.querySelector('textarea');
 
 		let lines = textArea.value.split('\n')
 
@@ -177,34 +177,34 @@ class LeFormatter {
 	}
 
 	static injectTagShift(id) {
-		const textAreaElement = gradioApp().getElementById(id);
+		let textArea = null
 
-		if (!textAreaElement) {
-			console.log(`Could not find element with id ${id}`);
+		try {
+			textArea = gradioApp().getElementById(id).querySelector('textarea')
+		}
+		catch {
 			return;
 		}
 
-		const textarea = textAreaElement.querySelector('textarea');
-
-		textarea.addEventListener('wheel', (event) => {
+		textArea.addEventListener('wheel', (event) => {
 			if (event.shiftKey) {
 				event.preventDefault()
 
-				if (textarea.selectionStart !== textarea.selectionEnd)
+				if (textArea.selectionStart !== textArea.selectionEnd)
 					return;
 
 				if (event.deltaY === 0)
 					return;
 
 				const shift = event.deltaY < 0 ? 1 : -1
-				const tags = textarea.value.split(',').map(t => t.trim())
+				const tags = textArea.value.split(',').map(t => t.trim())
 
-				var cursor = textarea.selectionStart
+				var cursor = textArea.selectionStart
 
 				var index = 0
 
-				for (let i = 0; i < textarea.selectionStart; i++) {
-					if (textarea.value[i] === ',')
+				for (let i = 0; i < textArea.selectionStart; i++) {
+					if (textArea.value[i] === ',')
 						index++
 				}
 
@@ -239,52 +239,52 @@ class LeFormatter {
 						shifted.push(tags[i])
 				}
 
-				textarea.value = shifted.join(', ')
+				textArea.value = shifted.join(', ')
 
-				textarea.selectionStart = cursor
-				textarea.selectionEnd = cursor
+				textArea.selectionStart = cursor
+				textArea.selectionEnd = cursor
 
-				updateInput(textarea)
+				updateInput(textArea)
 			}
 		})
 	}
 
 	static injectBracketEscape(id) {
-		const textAreaElement = gradioApp().getElementById(id);
+		let textArea = null
 
-		if (!textAreaElement) {
-			console.log(`Could not find element with id ${id}`);
+		try {
+			textArea = gradioApp().getElementById(id).querySelector('textarea')
+		}
+		catch {
 			return;
 		}
 
-		const textarea = textAreaElement.querySelector('textarea');
-
-		textarea.addEventListener('keydown', (event) => {
+		textArea.addEventListener('keydown', (event) => {
 			if (event.ctrlKey && event.key === '\\') {
 				event.preventDefault()
 
-				let cursorPosition = textarea.selectionStart
+				let cursorPosition = textArea.selectionStart
 
-				if (textarea.selectionStart !== textarea.selectionEnd)
+				if (textArea.selectionStart !== textArea.selectionEnd)
 					cursorPosition++
 
-				let result = LeFormatter.grabBrackets(textarea.value, cursorPosition)
+				let result = LeFormatter.grabBrackets(textArea.value, cursorPosition)
 
 				if (result) {
-					const original = textarea.value
+					const original = textArea.value
 
-					if (result[0] !== 0 && textarea.value[result[0] - 1] === '\\' && textarea.value[result[1] - 1] === '\\') {
-						textarea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1])
-						textarea.selectionStart = result[0] - 1
-						textarea.selectionEnd = result[1] - 1
+					if (result[0] !== 0 && textArea.value[result[0] - 1] === '\\' && textArea.value[result[1] - 1] === '\\') {
+						textArea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1])
+						textArea.selectionStart = result[0] - 1
+						textArea.selectionEnd = result[1] - 1
 					}
 					else {
-						textarea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1])
-						textarea.selectionStart = result[0]
-						textarea.selectionEnd = result[1] + 3
+						textArea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1])
+						textArea.selectionStart = result[0]
+						textArea.selectionEnd = result[1] + 3
 					}
 
-					updateInput(textarea)
+					updateInput(textArea)
 				}
 			}
 		})
