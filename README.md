@@ -3,7 +3,7 @@
 
 This is an Extension for the [Automatic1111 Webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), which helps formatting prompts.
 
-<p align="center"><img src="Demo.jpg" width=512></p>
+<p align="center"><img src="sample.jpg" width=512></p>
 
 Sometimes, when you type too fast or copy prompts from all over the places, you end up with duplicated **spaces** or **commas**. This simple Extension helps removing them whenever you click **Generate**.
 

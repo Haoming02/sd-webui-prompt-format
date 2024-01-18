@@ -3,7 +3,7 @@
 
 這是一個[Automatic1111 Webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui)的插件，用來幫忙校正咒語。
 
-<p align="center"><img src="Demo.jpg" width=512></p>
+<p align="center"><img src="sample.jpg" width=512></p>
 
 有時候如果打字太快或是從各處東拼西湊咒語，常會造成多個重複的空格或逗點。這個擴充可以幫忙移除它們。
 
