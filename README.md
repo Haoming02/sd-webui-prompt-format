@@ -24,11 +24,12 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Toggle between auto formatting and manual formatting
   - In `Auto`: The process is ran whenever you press **Generate**
   - In `Manual`: The process is only ran when you press the **Format** button
-- [x] **[New]** Use `Shift + ScrollWheel` to quickly move the hovered tag *(determined by **commas**)* around the prompt
+- [x] Use `Shift + ScrollWheel` to quickly move the hovered tag *(determined by **commas**)* around the prompt
+- [x] **[New]** You can now toggle which features to enable/disable by default in `System` section of the **Settings** tab
 
 ## Note
-1. Since the auto formatting is triggered at the same time as the generation, 
-the immediate image will not have its metadata updated unless you already did manual formatting beforehand. 
+1. Since the formatting in `Auto` mode is triggered at the same time as the generation, 
+the immediate image will not have its metadata updated (unless you already did manual formatting beforehand). 
 
 2. Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event,
-meaning the formatting will cause them to trigger. You can disable updating the actual prompts in the **System** section of the **Settings** tab.
+meaning the formatting will cause them to trigger. You can disable updating the actual prompts in the `System` section of the **Settings** tab.

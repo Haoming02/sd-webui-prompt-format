@@ -76,6 +76,9 @@ class LeFormatter {
 		if (!remove)
 			return tag;
 
+		if (this.cachedCards == null)
+			this.cache_Cards();
+
 		// [start:end:step] OR <lora:name:str>
 		const chucks = tag.split(':').map(c => c.trim());
 
@@ -282,14 +285,29 @@ class LeFormatter {
 		const config = gradioApp().getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
 		return !config.checked;
 	}
+
+	static defaultAuto() {
+		const config = gradioApp().getElementById('setting_pf_startinauto').querySelector('input[type=checkbox]');
+		return config.checked;
+	}
+
+	static defaultDedupe() {
+		const config = gradioApp().getElementById('setting_pf_startwithdedupe').querySelector('input[type=checkbox]');
+		return config.checked;
+	}
+
+	static defaultRemoveUnderscore() {
+		const config = gradioApp().getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
+		return config.checked;
+	}
 }
 
 onUiLoaded(async () => {
 	const Modes = ['txt', 'img'];
 
-	var autoRun = true;
-	var dedupe = true;
-	var removeUnderscore = false;
+	var autoRun = LeFormatter.defaultAuto();
+	var dedupe = LeFormatter.defaultDedupe();
+	var removeUnderscore = LeFormatter.defaultRemoveUnderscore();
 
 	const manualBtn = LeFormatter.manualButton({
 		onClick: () => {
@@ -298,7 +316,7 @@ onUiLoaded(async () => {
 		}
 	});
 
-	manualBtn.style.display = 'none';
+	manualBtn.style.display = autoRun ? 'none' : 'block';
 
 	const autoCB = LeFormatter.checkbox('Auto Format', autoRun, {
 		onChange: (checked) => {
@@ -314,8 +332,6 @@ onUiLoaded(async () => {
 	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
 		onChange: (checked) => {
 			removeUnderscore = checked;
-			if (LeFormatter.cachedCards == null)
-				LeFormatter.cache_Cards();
 		}
 	});
 
