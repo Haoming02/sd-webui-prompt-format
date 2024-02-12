@@ -3,6 +3,8 @@
 
 This is an Extension for the [Automatic1111 Webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), which helps formatting prompts.
 
+> Also supports [SD.Next](https://github.com/vladmandic/automatic) and [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge) out of the box!
+
 <p align="center"><img src="sample.jpg" width=512></p>
 
 Sometimes, when you type too fast or copy prompts from all over the places, you end up with duplicated **spaces** or **commas**. This simple Extension helps removing them whenever you click **Generate**.
@@ -15,17 +17,14 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   - **Note:** Only works for tag-based prompt, not sentence-based prompt 
     - **eg.** `1girl, solo, smile, 1girl` will become `1girl, solo, smile`
     - **eg.** `a girl smiling, a girl standing` will not be changed
-- [x] Toggle `Remove Underscores` to replace `_` with **space**
-  - *Some newer anime checkpoints claim to eliminate the need of using underscores*
+- [x] Toggle `Remove Underscores` to replace `_` with `space`
+  - Some newer anime checkpoints claim to eliminate the need of using underscores
 - [x] Respect line breaks
   - `Remove Duplicates` only checks within the same line
-- [x] Pressing `Ctrl + \` to quickly escape the **parentheses** of the hovered tag *(the words where the caret is)*
-  - Normally, **parentheses** are used to increase the weight of a prompt. Therefore, tags like `mejiro mcqueen (umamusume)` will need to be escaped to `mejiro mcqueen \(umamusume\)`.
 - [x] Toggle between auto formatting and manual formatting
   - In `Auto`: The process is ran whenever you press **Generate**
   - In `Manual`: The process is only ran when you press the **Format** button
-- [x] Use `Shift + ScrollWheel` to quickly move the hovered tag *(determined by **commas**)* around the prompt
-- [x] **[New]** You can now toggle which features to enable/disable by default in `System` section of the **Settings** tab
+- [x] Toggle which above features is enabled/disabled by default in `System` section of the **Settings** tab
 
 ## Note
 1. Since the formatting in `Auto` mode is triggered at the same time as the generation, 

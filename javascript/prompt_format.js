@@ -3,10 +3,13 @@ class LeFormatter {
 	// ===== Cache Embedding & LoRA Prompts =====
 	static cachedCards = null;
 
-	static cache_Cards() {
+	static cacheCards() {
 		this.cachedCards = [];
 
-		const extras = document.getElementById('txt2img_extra_tabs').querySelectorAll('span.name');
+		const extras = document.getElementById('txt2img_extra_tabs')?.querySelectorAll('span.name');
+		if (extras == null)
+			return;
+
 		extras.forEach((card) => {
 			if (card.textContent.includes('_'))
 				this.cachedCards.push(card.textContent);
@@ -14,24 +17,19 @@ class LeFormatter {
 	}
 
 	// ===== UI Related =====
-	static manualButton({ onClick }) {
-		const button = gradioApp().getElementById('txt2img_extra_refresh').cloneNode();
-
+	static button({ onClick }) {
+		const button = document.createElement('button');
 		button.id = 'manual-format';
+		button.classList.add(['lg', 'secondary', 'gradio-button']);
+
 		button.textContent = 'Format';
 		button.style.padding = '2px 8px';
 		button.style.borderRadius = '0.2em';
-		button.style.fontWeight = 'var(--button-small-text-weight)';
-		button.style.fontSize = 'var(--button-small-text-size)';
+		button.style.border = 'var(--button-border-width) solid var(--button-secondary-border-color)';
+		button.style.background = 'var(--button-secondary-background-fill)';
 
 		button.addEventListener('click', onClick);
-
 		return button;
-	}
-
-	static injectButton(id, { onClick }) {
-		const button = gradioApp().getElementById(id);
-		button.addEventListener('click', onClick);
 	}
 
 	static checkbox(text, default_value, { onChange }) {
@@ -55,12 +53,7 @@ class LeFormatter {
 	}
 
 	// ===== Main Format Logics =====
-	static formatPipeline(id, dedupe, removeUnderscore, autoRefresh) {
-		const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
-
-		if (textArea == null)
-			return;
-
+	static formatPipeline(textArea, dedupe, removeUnderscore, autoRefresh) {
 		const lines = textArea.value.split('\n');
 
 		for (let i = 0; i < lines.length; i++)
@@ -77,7 +70,7 @@ class LeFormatter {
 			return tag;
 
 		if (this.cachedCards == null)
-			this.cache_Cards();
+			this.cacheCards();
 
 		// [start:end:step] OR <lora:name:str>
 		const chucks = tag.split(':').map(c => c.trim());
@@ -144,142 +137,6 @@ class LeFormatter {
 		return input.split(',').map(word => word.trim()).filter(word => word !== '').join(', ');
 	}
 
-	static grabBrackets(str, index) {
-		var openBracket = -1;
-		var closeBracket = -1;
-
-		for (let i = index; i >= 0; i--) {
-			if (str[i] === '(') {
-				openBracket = i;
-				break;
-			}
-			if (str[i] === ')' && i !== index) {
-				break;
-			}
-		}
-
-		for (let i = index; i < str.length; i++) {
-			if (str[i] === ')') {
-				closeBracket = i;
-				break;
-			}
-			if (str[i] === '(' && i !== index) {
-				break;
-			}
-		}
-
-		if (openBracket !== -1 && closeBracket !== -1 && openBracket !== closeBracket)
-			return [openBracket, closeBracket];
-		else
-			return null;
-	}
-
-	static injectTagShift(id) {
-		const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
-
-		if (textArea == null)
-			return;
-
-		textArea.addEventListener('wheel', (event) => {
-			if (event.shiftKey) {
-				event.preventDefault();
-
-				if (textArea.selectionStart !== textArea.selectionEnd)
-					return;
-
-				if (event.deltaY === 0)
-					return;
-
-				const shift = event.deltaY < 0 ? 1 : -1;
-				const tags = textArea.value.split(',').map(t => t.trim());
-
-				var cursor = textArea.selectionStart;
-
-				var index = 0;
-
-				for (let i = 0; i < textArea.selectionStart; i++) {
-					if (textArea.value[i] === ',')
-						index++;
-				}
-
-				if (index === 0 && shift === -1)
-					return;
-				if (index === tags.length - 1 && shift === 1)
-					return;
-
-				const shifted = [];
-
-				if (shift < 0) {
-					for (let i = 0; i < index - 1; i++)
-						shifted.push(tags[i]);
-
-					shifted.push(tags[index]);
-					shifted.push(tags[index - 1]);
-
-					cursor -= tags[index - 1].length + 2;
-
-					for (let i = index + 1; i < tags.length; i++)
-						shifted.push(tags[i]);
-				} else {
-					for (let i = 0; i < index; i++)
-						shifted.push(tags[i]);
-
-					shifted.push(tags[index + 1]);
-					shifted.push(tags[index]);
-
-					cursor -= tags[index + 1].length * -1 - 2;
-
-					for (let i = index + 2; i < tags.length; i++)
-						shifted.push(tags[i]);
-				}
-
-				textArea.value = shifted.join(', ');
-
-				textArea.selectionStart = cursor;
-				textArea.selectionEnd = cursor;
-
-				updateInput(textArea);
-			}
-		});
-	}
-
-	static injectBracketEscape(id) {
-		const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
-
-		if (textArea == null)
-			return;
-
-		textArea.addEventListener('keydown', (event) => {
-			if (event.ctrlKey && event.key === '\\') {
-				event.preventDefault();
-
-				let cursorPosition = textArea.selectionStart;
-
-				if (textArea.selectionStart !== textArea.selectionEnd)
-					cursorPosition++;
-
-				let result = LeFormatter.grabBrackets(textArea.value, cursorPosition);
-
-				if (result) {
-					const original = textArea.value;
-
-					if (result[0] !== 0 && textArea.value[result[0] - 1] === '\\' && textArea.value[result[1] - 1] === '\\') {
-						textArea.value = original.slice(0, result[0] - 1) + original.slice(result[0] - 1, result[1]).replace(/\\/g, '') + original.slice(result[1]);
-						textArea.selectionStart = result[0] - 1;
-						textArea.selectionEnd = result[1] - 1;
-					}
-					else {
-						textArea.value = original.slice(0, result[0]) + '\\' + original.slice(result[0], result[1]) + '\\' + original.slice(result[1]);
-						textArea.selectionStart = result[0];
-						textArea.selectionEnd = result[1] + 3;
-					}
-
-					updateInput(textArea);
-				}
-			}
-		});
-	}
-
 	// ===== Load Settings =====
 	static shouldRefresh() {
 		const config = gradioApp().getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
@@ -300,19 +157,34 @@ class LeFormatter {
 		const config = gradioApp().getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
 		return config.checked;
 	}
+
+	// ===== Cache All Prompt Fields =====
+	static getPromptFields() {
+		// Expandable ID List in 1 place
+		const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt'];
+		const textareas = [];
+
+		ids.forEach((id) => {
+			const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
+			if (textArea != null)
+				textareas.push(textArea);
+		});
+
+		return textareas;
+	}
 }
 
 onUiLoaded(async () => {
-	const Modes = ['txt', 'img'];
+	const promptFields = LeFormatter.getPromptFields();
 
 	var autoRun = LeFormatter.defaultAuto();
 	var dedupe = LeFormatter.defaultDedupe();
 	var removeUnderscore = LeFormatter.defaultRemoveUnderscore();
+	const refresh = LeFormatter.shouldRefresh();
 
-	const manualBtn = LeFormatter.manualButton({
+	const manualBtn = LeFormatter.button({
 		onClick: () => {
-			const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt'];
-			ids.forEach((id) => LeFormatter.formatPipeline(id, dedupe, removeUnderscore, true));
+			promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, true));
 		}
 	});
 
@@ -330,9 +202,7 @@ onUiLoaded(async () => {
 	});
 
 	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
-		onChange: (checked) => {
-			removeUnderscore = checked;
-		}
+		onChange: (checked) => { removeUnderscore = checked; }
 	});
 
 	const formatter = document.createElement('div');
@@ -348,36 +218,10 @@ onUiLoaded(async () => {
 	const tools = document.getElementById('quicksettings');
 	tools.after(formatter);
 
-	Modes.forEach((mode) => {
-
-		LeFormatter.injectButton(mode + '2img_generate', {
-			onClick: () => {
-				if (!autoRun)
-					return;
-
-				const ids = [mode + '2img_prompt', mode + '2img_neg_prompt'];
-				ids.forEach((ID) => LeFormatter.formatPipeline(ID, dedupe, removeUnderscore, LeFormatter.shouldRefresh()));
-			}
+	['txt', 'img'].forEach((mode) => {
+		gradioApp().getElementById(`${mode}2img_generate`).addEventListener('click', () => {
+			if (autoRun)
+				promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, refresh));
 		});
-
-		LeFormatter.injectBracketEscape(mode + '2img_prompt');
-		LeFormatter.injectBracketEscape(mode + '2img_neg_prompt');
-		LeFormatter.injectTagShift(mode + '2img_prompt');
-		LeFormatter.injectTagShift(mode + '2img_neg_prompt');
 	});
-
-	LeFormatter.injectButton('txt2img_generate', {
-		onClick: () => {
-			if (!autoRun)
-				return;
-
-			const hires_id = ['hires_prompt', 'hires_neg_prompt'];
-			hires_id.forEach((hID) => LeFormatter.formatPipeline(hID, dedupe, removeUnderscore, LeFormatter.shouldRefresh()));
-		}
-	});
-
-	LeFormatter.injectBracketEscape('hires_prompt');
-	LeFormatter.injectBracketEscape('hires_neg_prompt');
-	LeFormatter.injectTagShift('hires_prompt');
-	LeFormatter.injectTagShift('hires_neg_prompt');
 });
