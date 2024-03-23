@@ -182,6 +182,13 @@ onUiLoaded(async () => {
 	var removeUnderscore = LeFormatter.defaultRemoveUnderscore();
 	const refresh = LeFormatter.shouldRefresh();
 
+	document.addEventListener('keydown', (e) => {
+		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
+			e.preventDefault();
+			promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, true));
+		}
+	});
+
 	const manualBtn = LeFormatter.button({
 		onClick: () => {
 			promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, true));
