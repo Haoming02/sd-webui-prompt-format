@@ -226,9 +226,18 @@ onUiLoaded(async () => {
 	tools.after(formatter);
 
 	['txt', 'img'].forEach((mode) => {
-		gradioApp().getElementById(`${mode}2img_generate`).addEventListener('click', () => {
-			if (autoRun)
+		const generateButton = gradioApp().getElementById(`${mode}2img_generate`);
+		const enqueueButton = gradioApp().getElementById(`${mode}2img_enqueue`);
+	
+		const handleClick = () => {
+			if (autoRun) {
 				promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, refresh));
-		});
+			}
+		};
+	
+		generateButton.addEventListener('click', handleClick);
+		if (enqueueButton) {
+			enqueueButton.addEventListener('click', handleClick);
+		}
 	});
 });
