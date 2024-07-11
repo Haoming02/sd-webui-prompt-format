@@ -16,42 +16,6 @@ class LeFormatter {
 		});
 	}
 
-	// ===== UI Related =====
-	static button({ onClick }) {
-		const button = document.createElement('button');
-		button.id = 'manual-format';
-		button.classList.add(['lg', 'secondary', 'gradio-button']);
-
-		button.textContent = 'Format';
-		button.style.padding = '2px 8px';
-		button.style.borderRadius = '0.2em';
-		button.style.border = 'var(--button-border-width) solid var(--button-secondary-border-color)';
-		button.style.background = 'var(--button-secondary-background-fill)';
-
-		button.addEventListener('click', onClick);
-		return button;
-	}
-
-	static checkbox(text, default_value, { onChange }) {
-		const label = gradioApp().getElementById('tab_settings').querySelector('input[type=checkbox]').parentNode.cloneNode(true);
-		label.removeAttribute('id');
-
-		const checkbox = label.children[0];
-
-		checkbox.checked = default_value;
-		checkbox.addEventListener('change', (event) => {
-			onChange(event.target.checked);
-		});
-
-		const span = label.children[1];
-		span.textContent = text;
-
-		label.style.display = 'flex';
-		label.style.alignItems = 'center';
-		label.style.margin = '2px 8px';
-		return label;
-	}
-
 	// ===== Main Format Logics =====
 	static formatPipeline(textArea, dedupe, removeUnderscore, autoRefresh) {
 		const lines = textArea.value.split('\n');
@@ -138,33 +102,44 @@ class LeFormatter {
 	}
 
 	// ===== Load Settings =====
+	/** @returns {boolean} */
 	static shouldRefresh() {
 		const config = gradioApp().getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
 		return !config.checked;
 	}
 
+	/** @returns {boolean} */
 	static defaultAuto() {
 		const config = gradioApp().getElementById('setting_pf_startinauto').querySelector('input[type=checkbox]');
 		return config.checked;
 	}
 
+	/** @returns {boolean} */
 	static defaultDedupe() {
 		const config = gradioApp().getElementById('setting_pf_startwithdedupe').querySelector('input[type=checkbox]');
 		return config.checked;
 	}
 
+	/** @returns {boolean} */
 	static defaultRemoveUnderscore() {
 		const config = gradioApp().getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
 		return config.checked;
 	}
 
 	// ===== Cache All Prompt Fields =====
+	/** @returns {Array<Element>} */
 	static getPromptFields() {
-		// Expandable ID List in 1 place
-		const ids = ['txt2img_prompt', 'txt2img_neg_prompt', 'img2img_prompt', 'img2img_neg_prompt', 'hires_prompt', 'hires_neg_prompt'];
 		const textareas = [];
 
-		ids.forEach((id) => {
+		// Expandable ID List in 1 place
+		[
+			'txt2img_prompt',
+			'txt2img_neg_prompt',
+			'img2img_prompt',
+			'img2img_neg_prompt',
+			'hires_prompt',
+			'hires_neg_prompt'
+		].forEach((id) => {
 			const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
 			if (textArea != null)
 				textareas.push(textArea);
@@ -176,11 +151,11 @@ class LeFormatter {
 
 onUiLoaded(async () => {
 	const promptFields = LeFormatter.getPromptFields();
+	const refresh = LeFormatter.shouldRefresh();
 
 	var autoRun = LeFormatter.defaultAuto();
 	var dedupe = LeFormatter.defaultDedupe();
 	var removeUnderscore = LeFormatter.defaultRemoveUnderscore();
-	const refresh = LeFormatter.shouldRefresh();
 
 	document.addEventListener('keydown', (e) => {
 		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
@@ -189,38 +164,25 @@ onUiLoaded(async () => {
 		}
 	});
 
-	const manualBtn = LeFormatter.button({
-		onClick: () => {
+	const formatter = LeFormatterUI.setupUIs(
+		() => {
 			promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, true));
-		}
+		},
+		autoRun, dedupe, removeUnderscore
+	);
+
+	formatter.checkboxs[0].addEventListener("change", (e) => {
+		autoRun = e.target.checked;
+		formatter.btn.style.display = autoRun ? 'none' : 'flex';
 	});
 
-	manualBtn.style.display = autoRun ? 'none' : 'block';
-
-	const autoCB = LeFormatter.checkbox('Auto Format', autoRun, {
-		onChange: (checked) => {
-			autoRun = checked;
-			manualBtn.style.display = autoRun ? 'none' : 'block';
-		}
+	formatter.checkboxs[1].addEventListener("change", (e) => {
+		dedupe = e.target.checked;
 	});
 
-	const dedupeCB = LeFormatter.checkbox('Remove Duplicates', dedupe, {
-		onChange: (checked) => { dedupe = checked; }
+	formatter.checkboxs[2].addEventListener("change", (e) => {
+		removeUnderscore = e.target.checked;
 	});
-
-	const underlineCB = LeFormatter.checkbox('Remove Underscores', removeUnderscore, {
-		onChange: (checked) => { removeUnderscore = checked; }
-	});
-
-	const formatter = document.createElement('div');
-	formatter.id = 'le-formatter';
-	formatter.style.display = 'flex';
-	formatter.style.flex.direction = 'row';
-
-	formatter.appendChild(autoCB);
-	formatter.appendChild(manualBtn);
-	formatter.appendChild(dedupeCB);
-	formatter.appendChild(underlineCB);
 
 	const tools = document.getElementById('quicksettings');
 	tools.after(formatter);
@@ -228,16 +190,15 @@ onUiLoaded(async () => {
 	['txt', 'img'].forEach((mode) => {
 		const generateButton = gradioApp().getElementById(`${mode}2img_generate`);
 		const enqueueButton = gradioApp().getElementById(`${mode}2img_enqueue`);
-	
-		const handleClick = () => {
-			if (autoRun) {
+
+		generateButton?.addEventListener('click', () => {
+			if (autoRun)
 				promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, refresh));
-			}
-		};
-	
-		generateButton.addEventListener('click', handleClick);
-		if (enqueueButton) {
-			enqueueButton.addEventListener('click', handleClick);
-		}
+		});
+
+		enqueueButton?.addEventListener('click', () => {
+			if (autoRun)
+				promptFields.forEach((field) => LeFormatter.formatPipeline(field, dedupe, removeUnderscore, refresh));
+		});
 	});
 });

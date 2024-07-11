@@ -1,0 +1,23 @@
+#le-formatter {
+    display: flex;
+    flex-direction: row;
+    user-select: none;
+}
+
+#manual-format {
+    height: 24px;
+    padding: 2px 8px;
+    border-radius: 0.2em;
+    border: var(--button-border-width) solid var(--button-secondary-border-color);
+    background: var(--button-secondary-background-fill);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pf-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 2px 8px;
+}
