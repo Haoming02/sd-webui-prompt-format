@@ -1,8 +1,19 @@
 class LeFormatter {
 
 	static #cachedCards = null;
+	static #alias = null;
 
-	/** @param {Element} textArea @param {boolean} dedupe @param {boolean} removeUnderscore @param {boolean} autoRefresh */
+	static forceReload() {
+		this.#alias = LeFormatterConfig.getTagAlias();
+		this.#cachedCards = LeFormatterConfig.cacheCards();
+	}
+
+	/**
+	 * @param {HTMLTextAreaElement} textArea
+	 * @param {boolean} dedupe
+	 * @param {boolean} removeUnderscore
+	 * @param {boolean} autoRefresh
+	 */
 	static formatPipeline(textArea, dedupe, removeUnderscore, autoRefresh) {
 		const lines = textArea.value.split('\n');
 
@@ -18,8 +29,12 @@ class LeFormatter {
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static #formatString(input, dedupe, removeUnderscore) {
 		// Remove Duplicate
-		if (dedupe)
+		if (dedupe) {
+			if (this.#alias == null)
+				this.#alias = LeFormatterConfig.getTagAlias();
+
 			input = this.#dedupe(input);
+		}
 
 		// Fix Commas inside Brackets
 		input = input
@@ -35,6 +50,7 @@ class LeFormatter {
 		if (removeUnderscore) {
 			if (this.#cachedCards == null)
 				this.#cachedCards = LeFormatterConfig.cacheCards();
+
 			tags = this.#removeUnderscore(tags);
 		}
 
@@ -68,16 +84,30 @@ class LeFormatter {
 		const KEYWORD = /^(AND|BREAK)$/;
 
 		chunks.forEach((tag) => {
-			const cleanedTag = tag.replace(/\[|\]|\(|\)|\s+/g, '').trim();
+			const cleanedTag = tag.replace(/\[|\]|\(|\)/g, '').replace(/\s+/g, ' ').trim();
 
 			if (KEYWORD.test(cleanedTag)) {
 				resultArray.push(tag);
 				return;
 			}
 
-			if (!uniqueSet.has(cleanedTag)) {
+			var substitute = null;
+			for (const [pattern, mainTag] of this.#alias) {
+				if (substitute != null)
+					return;
+				if (pattern.test(cleanedTag))
+					substitute = mainTag;
+			}
+
+			if ((substitute == null) && (!uniqueSet.has(cleanedTag))) {
 				uniqueSet.add(cleanedTag);
-				resultArray.push(tag);
+				resultArray.push(cleanedTag);
+				return;
+			}
+
+			if ((substitute != null) && (!uniqueSet.has(substitute))) {
+				uniqueSet.add(substitute);
+				resultArray.push(tag.replace(cleanedTag, substitute));
 				return;
 			}
 
@@ -110,9 +140,10 @@ class LeFormatter {
 	}
 }
 
-onUiLoaded(async () => {
+onUiLoaded(() => {
 
 	const config = new LeFormatterConfig();
+	config.button.onclick = () => { LeFormatter.forceReload(); }
 
 	document.addEventListener('keydown', (e) => {
 		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
@@ -145,17 +176,17 @@ onUiLoaded(async () => {
 	tools.after(formatter);
 
 	['txt', 'img'].forEach((mode) => {
-		const generateButton = gradioApp().getElementById(`${mode}2img_generate`);
-		const enqueueButton = gradioApp().getElementById(`${mode}2img_enqueue`);
-
-		generateButton?.addEventListener('click', () => {
-			if (config.autoRun)
-				config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh));
-		});
-
-		enqueueButton?.addEventListener('click', () => {
-			if (config.autoRun)
-				config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh));
+		// Expandable ID List in 1 place
+		[
+			`${mode}2img_generate`,
+			`${mode}2img_enqueue`,
+		].forEach((id) => {
+			const button = document.getElementById(id);
+			button?.addEventListener('click', () => {
+				if (config.autoRun)
+					config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh));
+			});
 		});
 	});
+
 });

@@ -1,9 +1,70 @@
-from modules import script_callbacks, shared
+from modules.script_callbacks import on_ui_settings
+from modules.shared import OptionInfo, opts
+import gradio as gr
 
-def on_ui_settings():
-    shared.opts.add_option("pf_disableupdateinput", shared.OptionInfo(False, "Prompt Format - Disable Update Input", section=("system", "System")).info("Enable this if you have Extensions, such as [tagcomplete], that subscribe to text editing event."))
-    shared.opts.add_option("pf_startinauto", shared.OptionInfo(True, "Prompt Format - Start in Auto Mode", section=("system", "System")))
-    shared.opts.add_option("pf_startwithdedupe", shared.OptionInfo(True, "Prompt Format - Start with Remove Duplicates", section=("system", "System")))
-    shared.opts.add_option("pf_startwithrmudscr", shared.OptionInfo(False, "Prompt Format - Start with Remove Underscores", section=("system", "System")))
+section = ("pf", "Prompt Format")
 
-script_callbacks.on_ui_settings(on_ui_settings)
+
+def on_settings():
+
+    opts.add_option(
+        "pf_disableupdateinput",
+        OptionInfo(
+            False,
+            "Disable automatic input updates",
+            section=section,
+            category_id="system",
+        ).info(
+            "check this if you have Extensions, such as [tagcomplete], that subscribe to text editing event"
+        ),
+    )
+
+    opts.add_option(
+        "pf_startinauto",
+        OptionInfo(True, "Start in Auto Mode", section=section, category_id="system"),
+    )
+
+    opts.add_option(
+        "pf_startwithdedupe",
+        OptionInfo(
+            True,
+            "Launch with Remove Duplicates",
+            section=section,
+            category_id="system",
+        ),
+    )
+
+    opts.add_option(
+        "pf_startwithrmudscr",
+        OptionInfo(
+            False,
+            "Launch with Remove Underscores",
+            section=section,
+            category_id="system",
+        ),
+    )
+
+    opts.add_option(
+        "pf_alias",
+        OptionInfo(
+            default="",
+            label="Tag Alias for Remove Duplicates",
+            component=gr.Textbox,
+            component_args={
+                "placeholder": "1girl: girl, woman, lady\nadult: \\d*\\s*(y\\.?o\\.?|[Yy]ear[s]? [Oo]ld)",
+                "lines": 8,
+                "max_lines": 64,
+            },
+            section=section,
+            category_id="system",
+        )
+        .info(
+            """treat tags on the right as duplicates, and substitute them with the main tag on the left)
+             (based on regular expression, meaning you may need to escape some symbols)
+             (comma is not supported in pattern"""
+        )
+        .link("RegExr", "https://regexr.com/"),
+    )
+
+
+on_ui_settings(on_settings)

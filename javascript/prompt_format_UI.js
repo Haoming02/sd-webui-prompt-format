@@ -1,6 +1,6 @@
 class LeFormatterUI {
 
-	/** @param {Function} onClick @returns {Element} */
+	/** @param {Function} onClick @returns {HTMLButtonElement} */
 	static #button(onClick) {
 		const button = document.createElement('button');
 		button.textContent = 'Format';
@@ -12,9 +12,9 @@ class LeFormatterUI {
 		return button;
 	}
 
-	/** @param {boolean} default_value @param {string} text @returns {Element} */
+	/** @param {boolean} default_value @param {string} text @returns {HTMLDivElement} */
 	static #checkbox(default_value, text) {
-		const label = gradioApp().getElementById('tab_settings').querySelector('input[type=checkbox]').parentNode.cloneNode(true);
+		const label = document.getElementById('tab_settings').querySelector('input[type=checkbox]').parentNode.cloneNode(true);
 		label.removeAttribute('id');
 		label.classList.add("pf-checkbox");
 
@@ -30,7 +30,7 @@ class LeFormatterUI {
 	/**
 	 * @param {Function} onManual
 	 * @param {boolean} autoRun @param {boolean} dedupe @param {boolean} removeUnderscore
-	 * @returns {Element}
+	 * @returns {HTMLDivElement}
 	 * */
 	static setupUIs(onManual, autoRun, dedupe, removeUnderscore) {
 		const formatter = document.createElement('div');

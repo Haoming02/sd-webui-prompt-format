@@ -6,34 +6,35 @@ class LeFormatterConfig {
         this.dedupe = this.#defaultDedupe();
         this.removeUnderscore = this.#defaultRemoveUnderscore();
         this.promptFields = this.#getPromptFields();
+        this.button = this.#createReloadButton();
     }
 
     /** @returns {boolean} */
     #shouldRefresh() {
-        const config = gradioApp().getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
+        const config = document.getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
         return !config.checked;
     }
 
     /** @returns {boolean} */
     #defaultAuto() {
-        const config = gradioApp().getElementById('setting_pf_startinauto').querySelector('input[type=checkbox]');
+        const config = document.getElementById('setting_pf_startinauto').querySelector('input[type=checkbox]');
         return config.checked;
     }
 
     /** @returns {boolean} */
     #defaultDedupe() {
-        const config = gradioApp().getElementById('setting_pf_startwithdedupe').querySelector('input[type=checkbox]');
+        const config = document.getElementById('setting_pf_startwithdedupe').querySelector('input[type=checkbox]');
         return config.checked;
     }
 
     /** @returns {boolean} */
     #defaultRemoveUnderscore() {
-        const config = gradioApp().getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
+        const config = document.getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
         return config.checked;
     }
 
     // ===== Cache All Prompt Fields =====
-    /** @returns {Array<Element>} */
+    /** @returns {HTMLTextAreaElement[]} */
     #getPromptFields() {
         const textareas = [];
 
@@ -46,7 +47,7 @@ class LeFormatterConfig {
             'hires_prompt',
             'hires_neg_prompt'
         ].forEach((id) => {
-            const textArea = gradioApp().getElementById(id)?.querySelector('textarea');
+            const textArea = document.getElementById(id)?.querySelector('textarea');
             if (textArea != null)
                 textareas.push(textArea);
         });
@@ -54,9 +55,21 @@ class LeFormatterConfig {
         return textareas;
     }
 
-    /** @returns {Array<string>} */
+    /** @returns {HTMLButtonElement} */
+    #createReloadButton() {
+        const button = document.getElementById('settings_show_all_pages').cloneNode(false);
+        const page = document.getElementById('column_settings_pf');
+
+        button.id = "setting_pf_reload";
+        button.textContent = "Reload Cached Cards & Alias";
+
+        page.appendChild(button);
+        return button;
+    }
+
+    /** @returns {string[]} */
     static cacheCards() {
-        const extras = gradioApp().getElementById('txt2img_extra_tabs');
+        const extras = document.getElementById('txt2img_extra_tabs');
         if (!extras)
             return [];
 
@@ -68,4 +81,38 @@ class LeFormatterConfig {
 
         return cards;
     }
+
+    /** @returns {Map<RegExp, string>} */
+    static getTagAlias() {
+        const alias = new Map();
+
+        const config = document.getElementById('setting_pf_alias').querySelector('textarea').value;
+
+        if (!config.trim())
+            return alias;
+
+        config.split("\n").forEach((line) => {
+            const [tag, words] = line.split(":");
+            const mainTag = tag.trim();
+
+            words.split(",").map(part => part.trim()).forEach((word) => {
+                if (word === mainTag)
+                    return;
+
+                const pattern = this.#parseRegExp(word);
+                alias.set(pattern, mainTag);
+            });
+        });
+
+        return alias;
+    }
+
+    /** @param {string} input @returns {RegExp} */
+    static #parseRegExp(input) {
+        const startAnchor = input.startsWith('^');
+        const endAnchor = input.endsWith('$');
+
+        return new RegExp(`${startAnchor ? '' : '^'}${input}${endAnchor ? '' : '$'}`);
+    }
+
 }
