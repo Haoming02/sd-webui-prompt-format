@@ -36,7 +36,7 @@
 - 你可以在此把其它字詞設為主單字的同義詞，使其在 `Remove Duplicates` 中被當作重複字而刪去
 - 格式為 `main tag: alias1, alias2, alias3`
   - **範例:**
-    ```json
+    ```
     1girl: girl, woman, lady
     ```
     - 如果輸入 `girl`, 便會轉換成 `1girl`; 而如果 `1girl` 已經存在，多餘的便會被刪除。

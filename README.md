@@ -36,7 +36,7 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - You can assign other tags that count as the same as the main tag, and thus get removed during `Remove Duplicates`
 - The syntax is in the format of `main tag: alias1, alias2, alias3`
   - **example:**
-    ```json
+    ```
     1girl: girl, woman, lady
     ```
     - If you type `girl`, it will get converted into `1girl`, and if you already have `1girl`, then the future ones will get removed.
