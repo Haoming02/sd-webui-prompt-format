@@ -101,7 +101,7 @@ class LeFormatter {
 
 			if ((substitute == null) && (!uniqueSet.has(cleanedTag))) {
 				uniqueSet.add(cleanedTag);
-				resultArray.push(cleanedTag);
+				resultArray.push(tag);
 				return;
 			}
 
