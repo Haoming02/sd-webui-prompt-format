@@ -63,6 +63,9 @@ class LeFormatterConfig {
         button.id = "setting_pf_reload";
         button.textContent = "Reload Cached Cards & Alias";
 
+        button.style.borderRadius = "1em";
+        button.style.margin = "1em 0em 0em 0em";
+
         page.appendChild(button);
         return button;
     }
@@ -78,6 +81,13 @@ class LeFormatterConfig {
             if (card.textContent.includes('_'))
                 cards.push(card.textContent);
         });
+
+        const config = document.getElementById('setting_pf_exclusion').querySelector('input').value;
+        if (config.trim()) {
+            config.split(",").forEach((tag) => {
+                cards.push(tag.trim());
+            });
+        }
 
         return cards;
     }

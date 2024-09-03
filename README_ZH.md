@@ -27,6 +27,9 @@
 - [x] 在 **Settings** 頁面 <ins>System</ins> 下的 `Prompt Format` 區可以 開啟/關閉 上述功能
 - [x] 按下 `Alt` + `Shift` + `F` 亦可觸發格式化
 - [x] 為指定單字新增 "[同義詞](#同義詞)"
+- [x] 將指定字詞除外 `Remove Underscores` 的影響
+- [x] 點擊 `Reload Cached Cards & Alias` 以重新載入
+  - 在一開始， `ExtraNetwork` 中的卡片會被緩存一次以防被 `Remove Underscores` 影響。如果你在 Webui 仍在運行時加入更多的卡片，點擊此按鈕來重新緩存。
 
 ### 同義詞
 

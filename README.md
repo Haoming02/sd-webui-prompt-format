@@ -27,6 +27,9 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Toggle whether the above features are enabled / disabled by default in the `Prompt Format` section under the <ins>System</ins> category of the **Settings** tab
 - [x] Pressing `Alt` + `Shift` + `F` can also trigger formatting
 - [x] Assign "[alias](#tag-alias)" that counts as duplicates for the specified tags
+- [x] Exclude specific tags from `Remove Underscores`
+- [x] Click `Reload Cached Cards & Alias` to force a reload
+  - By default, the `ExtraNetwork` cards are cached once at the start, to be excluded from `Remove Underscores`. If you add more cards while the Webui is still running, you may click this to re-cache again.
 
 ### Tag Alias
 

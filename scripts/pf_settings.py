@@ -45,6 +45,22 @@ def on_settings():
     )
 
     opts.add_option(
+        "pf_exclusion",
+        OptionInfo(
+            default="",
+            label="Exclude Tags from Remove Underscores",
+            component=gr.Textbox,
+            component_args={
+                "placeholder": "score_9, score_8_up, score_7_up",
+                "lines": 1,
+                "max_lines": 1,
+            },
+            section=section,
+            category_id="system",
+        ),
+    )
+
+    opts.add_option(
         "pf_alias",
         OptionInfo(
             default="",
