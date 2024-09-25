@@ -21,6 +21,7 @@
 - [x] 開啟`Remove Underscores`會將 `_` 換成 `空格`
 - [x] 保留咒語的換行
   - 上述的`Remove Duplicates`只在同一行中有效
+- [x] 在換行前加入逗點
 - [x] 按下`Auto Format`以在手動與自動間切換
   - `自動`: 每次按下 **生成 (Generate)** 時處裡
   - `手動`: 手動按下 **Format** 時才處裡

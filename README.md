@@ -21,6 +21,7 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Enable `Remove Underscores` to replace `_` with `space`
 - [x] Respect line breaks
   - `Remove Duplicates` only checks within the same line
+- [x] Append a comma before a line break
 - [x] Toggle between auto formatting and manual formatting
   - In `Auto` mode: The process is ran whenever you click on **Generate**
   - In `Manual` mode: The process is only ran when you click the **Format** button
@@ -58,4 +59,4 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 ### Note
 1. Since the formatting in `Auto` mode is triggered at the same time as the generation, the immediate image might not have its prompts updated.
 
-2. Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, meaning the formatting will cause them to be triggered. You can disable updating the actual prompts in the `Prompt Format` settings to prevent this.
+2. Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, meaning the formatting will cause them to be triggered. You can disable updating the actual prompts in the `Prompt Format` settings to prevent this. Though you may need to manually type something else for the prompt to get actually updated.
