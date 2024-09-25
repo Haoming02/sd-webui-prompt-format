@@ -14,8 +14,12 @@ def on_settings():
             "Disable automatic input updates",
             section=section,
             category_id="system",
-        ).info(
-            "check this if you have Extensions, such as [tagcomplete], that subscribe to text editing event"
+        ).html(
+            """
+            <span class='info'>(enable this if you have Extension,
+             such as <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>,
+             that subscribes to text editing event)</span>
+            """
         ),
     )
 
@@ -42,6 +46,16 @@ def on_settings():
             section=section,
             category_id="system",
         ),
+    )
+
+    opts.add_option(
+        "pf_appendcomma",
+        OptionInfo(
+            True,
+            "Append a comma at the end of a line",
+            section=section,
+            category_id="system",
+        ).info("only active when there are more than one line"),
     )
 
     opts.add_option(

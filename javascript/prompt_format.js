@@ -13,14 +13,15 @@ class LeFormatter {
 	 * @param {boolean} dedupe
 	 * @param {boolean} removeUnderscore
 	 * @param {boolean} autoRefresh
+	 * @param {boolean} appendComma
 	 */
-	static formatPipeline(textArea, dedupe, removeUnderscore, autoRefresh) {
+	static formatPipeline(textArea, dedupe, removeUnderscore, autoRefresh, appendComma) {
 		const lines = textArea.value.split('\n');
 
 		for (let i = 0; i < lines.length; i++)
 			lines[i] = this.#formatString(lines[i], dedupe, removeUnderscore);
 
-		textArea.value = lines.join('\n');
+		textArea.value = lines.join(appendComma ? ',\n' : '\n');
 
 		if (autoRefresh)
 			updateInput(textArea);
@@ -148,13 +149,13 @@ onUiLoaded(() => {
 	document.addEventListener('keydown', (e) => {
 		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
 			e.preventDefault();
-			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true));
+			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma));
 		}
 	});
 
 	const formatter = LeFormatterUI.setupUIs(
 		() => {
-			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true));
+			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma));
 		},
 		config.autoRun, config.dedupe, config.removeUnderscore
 	);
@@ -184,7 +185,7 @@ onUiLoaded(() => {
 			const button = document.getElementById(id);
 			button?.addEventListener('click', () => {
 				if (config.autoRun)
-					config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh));
+					config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma));
 			});
 		});
 	});

@@ -5,6 +5,7 @@ class LeFormatterConfig {
         this.autoRun = this.#defaultAuto();
         this.dedupe = this.#defaultDedupe();
         this.removeUnderscore = this.#defaultRemoveUnderscore();
+        this.comma = this.#appendComma();
         this.promptFields = this.#getPromptFields();
         this.button = this.#createReloadButton();
     }
@@ -30,6 +31,12 @@ class LeFormatterConfig {
     /** @returns {boolean} */
     #defaultRemoveUnderscore() {
         const config = document.getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
+        return config.checked;
+    }
+
+    /** @returns {boolean} */
+    #appendComma() {
+        const config = document.getElementById('setting_pf_appendcomma').querySelector('input[type=checkbox]');
         return config.checked;
     }
 
