@@ -21,7 +21,12 @@ class LeFormatter {
 		for (let i = 0; i < lines.length; i++)
 			lines[i] = this.#formatString(lines[i], dedupe, removeUnderscore);
 
-		textArea.value = lines.join(appendComma ? ',\n' : '\n');
+		if (!appendComma)
+			textArea.value = lines.join('\n');
+		else {
+			const val = lines.join(',\n');
+			textArea.value = val.replace(/\n,\n/g, "\n\n");
+		}
 
 		if (autoRefresh)
 			updateInput(textArea);
