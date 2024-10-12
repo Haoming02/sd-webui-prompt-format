@@ -59,6 +59,19 @@ class LeFormatterConfig {
                 textareas.push(textArea);
         });
 
+        // ADetailer
+        [
+            "script_txt2img_adetailer_ad_main_accordion",
+            "script_img2img_adetailer_ad_main_accordion"
+        ].forEach((id) => {
+            const fields = document.getElementById(id)?.querySelectorAll('textarea');
+            if (fields != null)
+                fields.forEach((textArea) => {
+                    if (textArea.placeholder.length > 0)
+                        textareas.push(textArea);
+                });
+        });
+
         return textareas;
     }
 
