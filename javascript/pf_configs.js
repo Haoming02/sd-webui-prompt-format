@@ -1,4 +1,4 @@
-class LeFormatterConfig {
+class pfConfigs {
 
     constructor() {
         this.refresh = this.#shouldRefresh();
@@ -7,7 +7,6 @@ class LeFormatterConfig {
         this.removeUnderscore = this.#defaultRemoveUnderscore();
         this.comma = this.#appendComma();
         this.promptFields = this.#getPromptFields();
-        this.button = this.#createReloadButton();
     }
 
     /** @returns {boolean} */
@@ -40,54 +39,45 @@ class LeFormatterConfig {
         return config.checked;
     }
 
-    // ===== Cache All Prompt Fields =====
-    /** @returns {HTMLTextAreaElement[]} */
+    /**
+     * Cache All Prompt Fields
+     * @returns {HTMLTextAreaElement[]}
+     */
     #getPromptFields() {
         const textareas = [];
 
-        // Expandable ID List in 1 place
-        [
+        /** Expandable List of IDs in 1 place */
+        const IDs = [
             'txt2img_prompt',
             'txt2img_neg_prompt',
             'img2img_prompt',
             'img2img_neg_prompt',
             'hires_prompt',
             'hires_neg_prompt'
-        ].forEach((id) => {
+        ];
+
+        for (const id of IDs) {
             const textArea = document.getElementById(id)?.querySelector('textarea');
             if (textArea != null)
                 textareas.push(textArea);
-        });
+        }
 
-        // ADetailer
-        [
+        const ADetailer = [
             "script_txt2img_adetailer_ad_main_accordion",
             "script_img2img_adetailer_ad_main_accordion"
-        ].forEach((id) => {
+        ];
+
+        for (const id of ADetailer) {
             const fields = document.getElementById(id)?.querySelectorAll('textarea');
-            if (fields != null)
-                fields.forEach((textArea) => {
-                    if (textArea.placeholder.length > 0)
-                        textareas.push(textArea);
-                });
-        });
+            if (fields == null)
+                continue;
+            for (const textArea of fields) {
+                if (textArea.placeholder.length > 0)
+                    textareas.push(textArea);
+            }
+        }
 
         return textareas;
-    }
-
-    /** @returns {HTMLButtonElement} */
-    #createReloadButton() {
-        const button = document.getElementById('settings_show_all_pages').cloneNode(false);
-        const page = document.getElementById('column_settings_pf');
-
-        button.id = "setting_pf_reload";
-        button.textContent = "Reload Cached Cards & Alias";
-
-        button.style.borderRadius = "1em";
-        button.style.margin = "1em 0em 0em 0em";
-
-        page.appendChild(button);
-        return button;
     }
 
     /** @returns {string[]} */
@@ -97,16 +87,15 @@ class LeFormatterConfig {
             return [];
 
         const cards = [];
-        extras.querySelectorAll('span.name').forEach((card) => {
+        for (const card of extras.querySelectorAll('span.name')) {
             if (card.textContent.includes('_'))
                 cards.push(card.textContent);
-        });
+        }
 
         const config = document.getElementById('setting_pf_exclusion').querySelector('input').value;
         if (config.trim()) {
-            config.split(",").forEach((tag) => {
+            for (const tag of config.split(","))
                 cards.push(tag.trim());
-            });
         }
 
         return cards;
@@ -117,22 +106,21 @@ class LeFormatterConfig {
         const alias = new Map();
 
         const config = document.getElementById('setting_pf_alias').querySelector('textarea').value;
-
         if (!config.trim())
             return alias;
 
-        config.split("\n").forEach((line) => {
+        for (const line of config.split("\n")) {
             const [tag, words] = line.split(":");
             const mainTag = tag.trim();
 
-            words.split(",").map(part => part.trim()).forEach((word) => {
+            for (const word of words.split(",").map(part => part.trim())) {
                 if (word === mainTag)
-                    return;
+                    continue;
 
                 const pattern = this.#parseRegExp(word);
                 alias.set(pattern, mainTag);
-            });
-        });
+            }
+        }
 
         return alias;
     }
@@ -141,7 +129,6 @@ class LeFormatterConfig {
     static #parseRegExp(input) {
         const startAnchor = input.startsWith('^');
         const endAnchor = input.endsWith('$');
-
         return new RegExp(`${startAnchor ? '' : '^'}${input}${endAnchor ? '' : '$'}`);
     }
 

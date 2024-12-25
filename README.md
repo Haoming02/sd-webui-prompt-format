@@ -29,13 +29,10 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Pressing `Alt` + `Shift` + `F` can also trigger formatting
 - [x] Assign "[alias](#tag-alias)" that counts as duplicates for the specified tags
 - [x] Exclude specific tags from `Remove Underscores`
-- [x] Click `Reload Cached Cards & Alias` to force a reload
-  - By default, the `ExtraNetwork` cards are cached once at the start, to be excluded from `Remove Underscores`. If you add more cards while the Webui is still running, you may click this to re-cache again.
+- [x] Click `Reload` to cache new cards
+  - By default, the `ExtraNetwork` cards are cached once at the start, to be excluded from `Remove Underscores`. If you added more cards while the Webui is already running, click this button to re-cache again.
 
 ### Tag Alias
-
-<p align="right"><i><b>New</b> 🔥</i></p>
-
 - In the `Prompt Format` settings, there is a new field for **Tag Alias**
 - You can assign other tags that count as the same as the main tag, and thus get removed during `Remove Duplicates`
 - The syntax is in the format of `main tag: alias1, alias2, alias3`

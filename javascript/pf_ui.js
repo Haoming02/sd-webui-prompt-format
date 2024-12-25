@@ -1,26 +1,22 @@
-class LeFormatterUI {
+class pfUI {
 
-	/** @param {Function} onClick @returns {HTMLButtonElement} */
-	static #button(onClick) {
+	/** @param {string} text @param {string} tip @returns {HTMLButtonElement} */
+	static #button(text, tip) {
 		const button = document.createElement('button');
-		button.textContent = 'Format';
-
-		button.id = 'manual-format';
 		button.classList.add(['lg', 'secondary', 'gradio-button']);
-
-		button.addEventListener('click', onClick);
+		button.textContent = text;
+		if (tip) button.title = tip;
 		return button;
 	}
 
-	/** @param {boolean} default_value @param {string} text @returns {HTMLDivElement} */
-	static #checkbox(default_value, text) {
+	/** @param {boolean} value @param {string} text @returns {HTMLLabelElement} */
+	static #checkbox(value, text) {
 		const label = document.getElementById('tab_settings').querySelector('input[type=checkbox]').parentNode.cloneNode(true);
-		label.removeAttribute('id');
 		label.classList.add("pf-checkbox");
+		label.removeAttribute('id');
 
 		const checkbox = label.children[0];
-		checkbox.checked = default_value;
-
+		checkbox.checked = value;
 		const span = label.children[1];
 		span.textContent = text;
 
@@ -28,16 +24,19 @@ class LeFormatterUI {
 	}
 
 	/**
-	 * @param {Function} onManual
-	 * @param {boolean} autoRun @param {boolean} dedupe @param {boolean} removeUnderscore
+	 * @param {boolean} autoRun
+	 * @param {boolean} dedupe
+	 * @param {boolean} removeUnderscore
 	 * @returns {HTMLDivElement}
-	 * */
-	static setupUIs(onManual, autoRun, dedupe, removeUnderscore) {
+	 */
+	static setupUIs(autoRun, dedupe, removeUnderscore) {
 		const formatter = document.createElement('div');
 		formatter.id = 'le-formatter';
 
-		const manualBtn = this.#button(onManual);
+		const manualBtn = this.#button('Format', null);
 		manualBtn.style.display = autoRun ? 'none' : 'flex';
+		const refreshBtn = this.#button('Reload', 'Reload Cached Cards & Alias');
+		refreshBtn.style.display = removeUnderscore ? 'flex' : 'none';
 
 		const autoCB = this.#checkbox(autoRun, 'Auto Format');
 		const dedupeCB = this.#checkbox(dedupe, 'Remove Duplicates');
@@ -47,13 +46,13 @@ class LeFormatterUI {
 		formatter.appendChild(manualBtn);
 		formatter.appendChild(dedupeCB);
 		formatter.appendChild(underscoreCB);
+		formatter.appendChild(refreshBtn);
 
-		formatter.btn = manualBtn;
-		formatter.checkboxs = [
-			autoCB.children[0],
-			dedupeCB.children[0],
-			underscoreCB.children[0]
-		];
+		formatter.manual = manualBtn;
+		formatter.refresh = refreshBtn;
+		formatter.auto = autoCB.children[0];
+		formatter.dedupe = dedupeCB.children[0];
+		formatter.underscore = underscoreCB.children[0];
 
 		return formatter;
 	}

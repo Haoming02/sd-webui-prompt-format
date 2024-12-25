@@ -29,13 +29,10 @@
 - [x] 按下 `Alt` + `Shift` + `F` 亦可觸發格式化
 - [x] 為指定單字新增 "[同義詞](#同義詞)"
 - [x] 將指定字詞除外 `Remove Underscores` 的影響
-- [x] 點擊 `Reload Cached Cards & Alias` 以重新載入
-  - 在一開始， `ExtraNetwork` 中的卡片會被緩存一次以防被 `Remove Underscores` 影響。如果你在 Webui 仍在運行時加入更多的卡片，點擊此按鈕來重新緩存。
+- [x] 點擊 `Reload` 以緩存卡片
+  - 在 Webui 剛開啟時， `ExtraNetwork` 中的卡片會被緩存一次以防被 `Remove Underscores` 影響。如果你在 Webui 已運行時加入更多的卡片，點擊此按鈕來重新緩存。
 
 ### 同義詞
-
-<p align="right"><i><b>新功能</b> 🔥</i></p>
-
 - 在 `Prompt Format` 的設定裡，有個新的 **Tag Alias** 欄位
 - 你可以在此把其它字詞設為主單字的同義詞，使其在 `Remove Duplicates` 中被當作重複字而刪去
 - 格式為 `main tag: alias1, alias2, alias3`

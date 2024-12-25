@@ -1,11 +1,27 @@
 class LeFormatter {
 
-	static #cachedCards = null;
-	static #alias = null;
+	static #cachedCardsInternal = null;
+	static #aliasInternal = null;
 
 	static forceReload() {
-		this.#alias = LeFormatterConfig.getTagAlias();
-		this.#cachedCards = LeFormatterConfig.cacheCards();
+		this.#cachedCardsInternal = null;
+		this.#aliasInternal = null;
+	}
+
+	/** @returns {string[]} */
+	static get #cachedCards() {
+		if (this.#cachedCardsInternal == null)
+			this.#cachedCardsInternal = pfConfigs.cacheCards();
+
+		return this.#cachedCardsInternal;
+	}
+
+	/** @returns {Map<RegExp, string>} */
+	static get #alias() {
+		if (this.#aliasInternal == null)
+			this.#aliasInternal = pfConfigs.getTagAlias();
+
+		return this.#aliasInternal;
 	}
 
 	/**
@@ -25,7 +41,7 @@ class LeFormatter {
 			textArea.value = lines.join('\n');
 		else {
 			const val = lines.join(',\n');
-			textArea.value = val.replace(/\n,\n/g, "\n\n");
+			textArea.value = val.replace(/\n,\n/g, '\n\n');
 		}
 
 		if (autoRefresh)
@@ -35,12 +51,7 @@ class LeFormatter {
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static #formatString(input, dedupe, removeUnderscore) {
 		// Remove Duplicate
-		if (dedupe) {
-			if (this.#alias == null)
-				this.#alias = LeFormatterConfig.getTagAlias();
-
-			input = this.#dedupe(input);
-		}
+		input = dedupe ? this.#dedupe(input) : input;
 
 		// Fix Commas inside Brackets
 		input = input
@@ -50,22 +61,17 @@ class LeFormatter {
 			.replace(/\[\s*,+/g, ',[');
 
 		// Sentence -> Tags
-		var tags = input.split(',');
+		let tags = input.split(',');
 
 		// Remove Underscore
-		if (removeUnderscore) {
-			if (this.#cachedCards == null)
-				this.#cachedCards = LeFormatterConfig.cacheCards();
-
-			tags = this.#removeUnderscore(tags);
-		}
+		tags = removeUnderscore ? this.#removeUnderscore(tags) : tags;
 
 		// Remove Stray Brackets
 		const patterns = /^\(+$|^\)+$|^\[+$|^\]+$/;
 		tags = tags.filter(word => !patterns.test(word));
 
 		// Remove extra Spaces
-		input = tags.join(', ').replace(/\s{2,}/g, ' ');
+		input = tags.join(', ').replace(/\s+/g, ' ');
 
 		// Fix Bracket & Space
 		input = input
@@ -85,22 +91,22 @@ class LeFormatter {
 	static #dedupe(input) {
 		const chunks = input.split(',');
 
+		const KEYWORD = /^(AND|BREAK)$/;
 		const uniqueSet = new Set();
 		const resultArray = [];
-		const KEYWORD = /^(AND|BREAK)$/;
 
-		chunks.forEach((tag) => {
+		for (const tag of chunks) {
 			const cleanedTag = tag.replace(/\[|\]|\(|\)/g, '').replace(/\s+/g, ' ').trim();
 
 			if (KEYWORD.test(cleanedTag)) {
 				resultArray.push(tag);
-				return;
+				continue;
 			}
 
-			var substitute = null;
+			let substitute = null;
 			for (const [pattern, mainTag] of this.#alias) {
 				if (substitute != null)
-					return;
+					continue;
 				if (pattern.test(cleanedTag))
 					substitute = mainTag;
 			}
@@ -108,39 +114,39 @@ class LeFormatter {
 			if ((substitute == null) && (!uniqueSet.has(cleanedTag))) {
 				uniqueSet.add(cleanedTag);
 				resultArray.push(tag);
-				return;
+				continue;
 			}
 
 			if ((substitute != null) && (!uniqueSet.has(substitute))) {
 				uniqueSet.add(substitute);
 				resultArray.push(tag.replace(cleanedTag, substitute));
-				return;
+				continue;
 			}
 
 			resultArray.push(tag.replace(cleanedTag, ''));
-		});
+		}
 
 		return resultArray.join(', ');
 	}
 
-	/** @param {Array<string} tags @returns {Array<string} */
+	/** @param {string[]} tags @returns {string[]} */
 	static #removeUnderscore(tags) {
 		const result = [];
 
-		tags.forEach((tag) => {
+		for (const tag of tags) {
 			if (!tag.trim())
-				return;
+				continue;
 
 			// [start:end:step] OR <lora:name:str>
 			const chucks = tag.split(':').map(c => c.trim());
 
 			for (let i = 0; i < chucks.length; i++) {
 				if (!this.#cachedCards.includes(chucks[i]))
-					chucks[i] = chucks[i].replace(/_/g, ' ');
+					chucks[i] = chucks[i].replaceAll('_', ' ');
 			}
 
 			result.push(chucks.join(':').trim());
-		});
+		}
 
 		return result;
 	}
@@ -148,51 +154,59 @@ class LeFormatter {
 
 onUiLoaded(() => {
 
-	const config = new LeFormatterConfig();
-	config.button.onclick = () => { LeFormatter.forceReload(); }
+	const config = new pfConfigs();
+	const formatter = pfUI.setupUIs(config.autoRun, config.dedupe, config.removeUnderscore);
 
 	document.addEventListener('keydown', (e) => {
 		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
 			e.preventDefault();
-			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma));
+			for (const field of config.promptFields)
+				LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma);
 		}
 	});
 
-	const formatter = LeFormatterUI.setupUIs(
-		() => {
-			config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma));
-		},
-		config.autoRun, config.dedupe, config.removeUnderscore
-	);
-
-	formatter.checkboxs[0].addEventListener("change", (e) => {
-		config.autoRun = e.target.checked;
-		formatter.btn.style.display = config.autoRun ? 'none' : 'flex';
+	formatter.auto.addEventListener("change", () => {
+		config.autoRun = formatter.auto.checked;
+		formatter.manual.style.display = config.autoRun ? 'none' : 'flex';
 	});
 
-	formatter.checkboxs[1].addEventListener("change", (e) => {
-		config.dedupe = e.target.checked;
+	formatter.dedupe.addEventListener("change", () => {
+		config.dedupe = formatter.dedupe.checked;
 	});
 
-	formatter.checkboxs[2].addEventListener("change", (e) => {
-		config.removeUnderscore = e.target.checked;
+	formatter.underscore.addEventListener("change", () => {
+		config.removeUnderscore = formatter.underscore.checked;
+		formatter.refresh.style.display = config.removeUnderscore ? 'flex' : 'none';
+	});
+
+	formatter.manual.addEventListener("click", () => {
+		for (const field of config.promptFields)
+			LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
+	});
+
+	formatter.refresh.addEventListener("click", () => {
+		LeFormatter.forceReload();
 	});
 
 	const tools = document.getElementById('quicksettings');
 	tools.after(formatter);
 
-	['txt', 'img'].forEach((mode) => {
-		// Expandable ID List in 1 place
-		[
-			`${mode}2img_generate`,
-			`${mode}2img_enqueue`,
-		].forEach((id) => {
-			const button = document.getElementById(id);
-			button?.addEventListener('click', () => {
-				if (config.autoRun)
-					config.promptFields.forEach((field) => LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma));
-			});
+	/** Expandable List of IDs in 1 place */
+	const IDs = [
+		'txt2img_generate',
+		'txt2img_enqueue',
+		'img2img_generate',
+		'img2img_enqueue'
+	];
+
+	for (const id of IDs) {
+		const button = document.getElementById(id);
+		button?.addEventListener('click', () => {
+			if (config.autoRun) {
+				for (const field of config.promptFields)
+					LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
+			}
 		});
-	});
+	}
 
 });

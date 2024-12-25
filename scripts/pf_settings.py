@@ -1,61 +1,39 @@
 from modules.script_callbacks import on_ui_settings
-from modules.shared import OptionInfo, opts
-import gradio as gr
-
-section = ("pf", "Prompt Format")
 
 
 def on_settings():
+    from modules.shared import OptionInfo, opts
+    import gradio as gr
+
+    args = {"section": ("pf", "Prompt Format"), "category_id": "system"}
 
     opts.add_option(
         "pf_disableupdateinput",
-        OptionInfo(
-            False,
-            "Disable automatic input updates",
-            section=section,
-            category_id="system",
-        ).html(
-            """
-            <span class='info'>(enable this if you have Extension,
-             such as <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>,
-             that subscribes to text editing event)</span>
-            """
+        OptionInfo(False, "Disable the automatic updates of the prompts", **args).info(
+            'enable this if you have Extensions, such as <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>, that subscribe to text editing events'
         ),
     )
 
     opts.add_option(
         "pf_startinauto",
-        OptionInfo(True, "Start in Auto Mode", section=section, category_id="system"),
+        OptionInfo(True, "Launch in Auto Mode", **args),
     )
 
     opts.add_option(
         "pf_startwithdedupe",
-        OptionInfo(
-            True,
-            "Launch with Remove Duplicates",
-            section=section,
-            category_id="system",
-        ),
+        OptionInfo(True, "Launch with Remove Duplicates", **args),
     )
 
     opts.add_option(
         "pf_startwithrmudscr",
-        OptionInfo(
-            False,
-            "Launch with Remove Underscores",
-            section=section,
-            category_id="system",
-        ),
+        OptionInfo(True, "Launch with Remove Underscores", **args),
     )
 
     opts.add_option(
         "pf_appendcomma",
-        OptionInfo(
-            True,
-            "Append a comma at the end of a line",
-            section=section,
-            category_id="system",
-        ).info("only active when there are more than one line"),
+        OptionInfo(True, "Append a comma at the end of each line", **args).info(
+            "only active when there are multiple lines"
+        ),
     )
 
     opts.add_option(
@@ -66,11 +44,10 @@ def on_settings():
             component=gr.Textbox,
             component_args={
                 "placeholder": "score_9, score_8_up, score_7_up",
-                "lines": 1,
                 "max_lines": 1,
+                "lines": 1,
             },
-            section=section,
-            category_id="system",
+            **args
         ),
     )
 
@@ -82,18 +59,17 @@ def on_settings():
             component=gr.Textbox,
             component_args={
                 "placeholder": "1girl: girl, woman, lady\nadult: \\d*\\s*(y\\.?o\\.?|[Yy]ear[s]? [Oo]ld)",
-                "lines": 8,
-                "max_lines": 64,
+                "max_lines": 16,
+                "lines": 4,
             },
-            section=section,
-            category_id="system",
+            **args
         )
+        .link("RegExr", "https://regexr.com/")
         .info(
-            """treat tags on the right as duplicates, and substitute them with the main tag on the left)
-             (based on regular expression, meaning you may need to escape some symbols)
-             (comma is not supported in pattern"""
-        )
-        .link("RegExr", "https://regexr.com/"),
+            """treat tags on the right as duplicates of the main tag on the left)
+             (based on regular expression, meaning you need to escape special characters)
+             (comma is not allowed"""
+        ),
     )
 
 

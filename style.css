@@ -4,7 +4,7 @@
     user-select: none;
 }
 
-#manual-format {
+#le-formatter button {
     height: 24px;
     padding: 2px 8px;
     border-radius: 0.2em;
@@ -16,7 +16,7 @@
     align-items: center;
 }
 
-.pf-checkbox {
+#le-formatter .pf-checkbox {
     display: flex;
     align-items: center;
     margin: 2px 8px;
