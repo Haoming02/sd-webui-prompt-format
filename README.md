@@ -25,6 +25,7 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Toggle between auto formatting and manual formatting
   - In `Auto` mode: The process is ran whenever you click on **Generate**
   - In `Manual` mode: The process is only ran when you click the **Format** button
+- [x] **New:** Trigger the formatting when pasting text
 - [x] Toggle whether the above features are enabled / disabled by default in the `Prompt Format` section under the <ins>System</ins> category of the **Settings** tab
 - [x] Pressing `Alt` + `Shift` + `F` can also trigger formatting
 - [x] Assign "[alias](#tag-alias)" that counts as duplicates for the specified tags

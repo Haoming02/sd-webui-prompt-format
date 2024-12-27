@@ -37,6 +37,11 @@ def on_settings():
     )
 
     opts.add_option(
+        "pf_onpaste",
+        OptionInfo(False, "Trigger a Format when pasting text", **args),
+    )
+
+    opts.add_option(
         "pf_exclusion",
         OptionInfo(
             default="",

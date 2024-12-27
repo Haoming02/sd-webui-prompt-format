@@ -35,7 +35,7 @@ class LeFormatter {
 		const lines = textArea.value.split('\n');
 
 		for (let i = 0; i < lines.length; i++)
-			lines[i] = this.#formatString(lines[i], dedupe, removeUnderscore);
+			lines[i] = this.formatString(lines[i], dedupe, removeUnderscore);
 
 		if (!appendComma)
 			textArea.value = lines.join('\n');
@@ -49,7 +49,7 @@ class LeFormatter {
 	}
 
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
-	static #formatString(input, dedupe, removeUnderscore) {
+	static formatString(input, dedupe, removeUnderscore) {
 
 		// Fix Commas inside Brackets
 		input = input
@@ -212,6 +212,26 @@ onUiLoaded(() => {
 					LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
 			}
 		});
+	}
+
+	if (config.paste) {
+		for (const field of config.promptFields) {
+			field.addEventListener('paste', (event) => {
+				event.preventDefault();
+
+				let paste = (event.clipboardData || window.clipboardData).getData('text');
+				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
+
+				const currentText = field.value;
+				const cursorPosition = field.selectionStart;
+
+				const newText = currentText.slice(0, cursorPosition) + paste + currentText.slice(field.selectionEnd);
+				field.value = newText;
+				field.selectionStart = field.selectionEnd = cursorPosition + paste.length;
+
+				updateInput(field);
+			});
+		}
 	}
 
 });

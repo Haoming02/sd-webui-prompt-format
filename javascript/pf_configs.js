@@ -6,6 +6,7 @@ class pfConfigs {
         this.dedupe = this.#defaultDedupe();
         this.removeUnderscore = this.#defaultRemoveUnderscore();
         this.comma = this.#appendComma();
+        this.paste = this.#onpaste();
         this.promptFields = this.#getPromptFields();
     }
 
@@ -36,6 +37,12 @@ class pfConfigs {
     /** @returns {boolean} */
     #appendComma() {
         const config = document.getElementById('setting_pf_appendcomma').querySelector('input[type=checkbox]');
+        return config.checked;
+    }
+
+    /** @returns {boolean} */
+    #onpaste() {
+        const config = document.getElementById('setting_pf_onpaste').querySelector('input[type=checkbox]');
         return config.checked;
     }
 
