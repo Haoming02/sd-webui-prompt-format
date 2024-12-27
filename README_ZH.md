@@ -65,7 +65,7 @@
 <summary><b>Booru</b></summary>
 
 - [x] 自動清除多餘字詞
-  - 文字結構基於 [gelbooru](https://gelbooru.com/)
+  - 目前支援 [gelbooru](https://gelbooru.com/) 及 [danbooru](https://safebooru.donmai.us/)
 
 <p align="center"><img src="booru.png" width=512></p>
 

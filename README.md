@@ -65,7 +65,7 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 <summary><b>Booru</b></summary>
 
 - [x] Automatically clean up unwanted texts
-  - Structure is based on [gelbooru](https://gelbooru.com/)
+  - Currently supports [gelbooru](https://gelbooru.com/) and [danbooru](https://safebooru.donmai.us/)
 
 <p align="center"><img src="booru.png" width=512></p>
 
