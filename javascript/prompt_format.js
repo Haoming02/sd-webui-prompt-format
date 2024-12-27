@@ -50,105 +50,110 @@ class LeFormatter {
 
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static #formatString(input, dedupe, removeUnderscore) {
-		// Remove Duplicate
-		input = dedupe ? this.#dedupe(input) : input;
 
 		// Fix Commas inside Brackets
 		input = input
-			.replace(/,+\s*\)/g, '),')
-			.replace(/,+\s*\]/g, '],')
-			.replace(/\(\s*,+/g, ',(')
-			.replace(/\[\s*,+/g, ',[');
+			.replace(/[,\s]+\)/g, '),')
+			.replace(/[,\s]+\]/g, '],')
+			.replace(/\([,\s]+/g, ',(')
+			.replace(/\[[,\s]+/g, ',[');
 
-		// Sentence -> Tags
-		let tags = input.split(',');
+		// Fix Bracket & Space
+		input = input
+			.replace(/\s+\)/g, ')')
+			.replace(/\s+\]/g, ']')
+			.replace(/\(\s+/g, '(')
+			.replace(/\[\s+/g, '[')
+			.replace(/\<\s+/g, '<')
+			.replace(/\s+\>/g, '>');
+
+		// Remove Space around Syntax
+		input = input
+			.replace(/\s*\|\s*/g, '|')
+			.replace(/\s*\:\s*/g, ':');
 
 		// Remove Underscore
-		tags = removeUnderscore ? this.#removeUnderscore(tags) : tags;
+		input = removeUnderscore ? this.#removeUnderscore(input) : input;
 
-		// Remove Stray Brackets
-		const patterns = /^\(+$|^\)+$|^\[+$|^\]+$/;
-		tags = tags.filter(word => !patterns.test(word));
+		// Sentence -> Tags
+		let tags = input.split(',').map(word => word.trim());
+
+		// Remove Duplicate
+		tags = dedupe ? this.#dedupe(tags) : tags;
 
 		// Remove extra Spaces
 		input = tags.join(', ').replace(/\s+/g, ' ');
 
-		// Fix Bracket & Space
-		input = input
-			.replace(/\s\)/g, ')')
-			.replace(/\s\]/g, ']')
-			.replace(/\(\s/g, '(')
-			.replace(/\[\s/g, '[');
-
-		// Fix Empty Bracket
-		while (input.match(/\(\s*\)|\[\s*\]/g))
+		// Remove Empty Brackets
+		while (/\(\s*\)|\[\s*\]/.test(input))
 			input = input.replace(/\(\s*\)|\[\s*\]/g, '');
 
 		return input.split(',').map(word => word.trim()).filter(word => word).join(', ');
 	}
 
-	/** @param {string} input @returns {string} */
+	/** @param {string[]} input @returns {string[]} */
 	static #dedupe(input) {
-		const chunks = input.split(',');
-
 		const KEYWORD = /^(AND|BREAK)$/;
 		const uniqueSet = new Set();
-		const resultArray = [];
+		const results = [];
 
-		for (const tag of chunks) {
+		for (const tag of input) {
 			const cleanedTag = tag.replace(/\[|\]|\(|\)/g, '').replace(/\s+/g, ' ').trim();
 
 			if (KEYWORD.test(cleanedTag)) {
-				resultArray.push(tag);
+				results.push(tag);
 				continue;
 			}
 
 			let substitute = null;
 			for (const [pattern, mainTag] of this.#alias) {
-				if (substitute != null)
-					continue;
-				if (pattern.test(cleanedTag))
+				if (pattern.test(cleanedTag)) {
 					substitute = mainTag;
+					break;
+				}
 			}
 
 			if ((substitute == null) && (!uniqueSet.has(cleanedTag))) {
 				uniqueSet.add(cleanedTag);
-				resultArray.push(tag);
+				results.push(tag);
 				continue;
 			}
 
 			if ((substitute != null) && (!uniqueSet.has(substitute))) {
 				uniqueSet.add(substitute);
-				resultArray.push(tag.replace(cleanedTag, substitute));
+				results.push(tag.replace(cleanedTag, substitute));
 				continue;
 			}
 
-			resultArray.push(tag.replace(cleanedTag, ''));
+			results.push(tag.replace(cleanedTag, ''));
 		}
 
-		return resultArray.join(', ');
+		return results;
 	}
 
-	/** @param {string[]} tags @returns {string[]} */
-	static #removeUnderscore(tags) {
-		const result = [];
+	/** @param {string} input @returns {string} */
+	static #removeUnderscore(input) {
+		if (!input.trim())
+			return "";
 
-		for (const tag of tags) {
-			if (!tag.trim())
-				continue;
+		const syntax = /\,\|\:\<\>\(\)\[\]\{\}/;
+		const pattern = new RegExp(`([${syntax.source}]+|[^${syntax.source}]+)`, 'g');
+		const parts = input.match(pattern);
 
-			// [start:end:step] OR <lora:name:str>
-			const chucks = tag.split(':').map(c => c.trim());
+		const processed = parts.map((part) => {
+			if (new RegExp(`[${syntax.source}]+`).test(part))
+				return part;
+			if (/^\s+$/.test(part))
+				return part;
 
-			for (let i = 0; i < chucks.length; i++) {
-				if (!this.#cachedCards.includes(chucks[i]))
-					chucks[i] = chucks[i].replaceAll('_', ' ');
-			}
+			part = part.trim();
+			if (!this.#cachedCards.includes(part))
+				part = part.replaceAll('_', ' ');
 
-			result.push(chucks.join(':').trim());
-		}
+			return part;
+		});
 
-		return result;
+		return processed.join('');
 	}
 }
 
