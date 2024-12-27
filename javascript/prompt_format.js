@@ -51,6 +51,9 @@ class LeFormatter {
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static formatString(input, dedupe, removeUnderscore) {
 
+		// Remove Underscore
+		input = removeUnderscore ? this.#removeUnderscore(input) : input;
+
 		// Fix Commas inside Brackets
 		input = input
 			.replace(/[,\s]+\)/g, '),')
@@ -71,9 +74,6 @@ class LeFormatter {
 		input = input
 			.replace(/\s*\|\s*/g, '|')
 			.replace(/\s*\:\s*/g, ':');
-
-		// Remove Underscore
-		input = removeUnderscore ? this.#removeUnderscore(input) : input;
 
 		// Sentence -> Tags
 		let tags = input.split(',').map(word => word.trim());
@@ -146,7 +146,6 @@ class LeFormatter {
 			if (/^\s+$/.test(part))
 				return part;
 
-			part = part.trim();
 			if (!this.#cachedCards.includes(part))
 				part = part.replaceAll('_', ' ');
 
@@ -220,6 +219,16 @@ onUiLoaded(() => {
 				event.preventDefault();
 
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
+
+				if (config.booru) {
+					paste = paste.replace(/\s\d+|\?\s+/g, ", ");
+					for (const excl of ["Artist", "Character", "Copyright", "Tag"])
+						paste = paste.replace(excl, "");
+
+					paste = paste.replaceAll("(", "\\(");
+					paste = paste.replaceAll(")", "\\)");
+				}
+
 				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
 
 				const currentText = field.value;

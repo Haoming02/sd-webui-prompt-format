@@ -7,6 +7,8 @@ class pfConfigs {
         this.removeUnderscore = this.#defaultRemoveUnderscore();
         this.comma = this.#appendComma();
         this.paste = this.#onpaste();
+        this.booru = this.#procBooru();
+
         this.promptFields = this.#getPromptFields();
     }
 
@@ -43,6 +45,12 @@ class pfConfigs {
     /** @returns {boolean} */
     #onpaste() {
         const config = document.getElementById('setting_pf_onpaste').querySelector('input[type=checkbox]');
+        return config.checked;
+    }
+
+    /** @returns {boolean} */
+    #procBooru() {
+        const config = document.getElementById('setting_pf_booru').querySelector('input[type=checkbox]');
         return config.checked;
     }
 

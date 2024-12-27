@@ -25,7 +25,7 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Toggle between auto formatting and manual formatting
   - In `Auto` mode: The process is ran whenever you click on **Generate**
   - In `Manual` mode: The process is only ran when you click the **Format** button
-- [x] **New:** Trigger the formatting when pasting text
+- [x] **New:** Trigger the formatting on the pasted text
 - [x] Toggle whether the above features are enabled / disabled by default in the `Prompt Format` section under the <ins>System</ins> category of the **Settings** tab
 - [x] Pressing `Alt` + `Shift` + `F` can also trigger formatting
 - [x] Assign "[alias](#tag-alias)" that counts as duplicates for the specified tags
@@ -58,3 +58,15 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 1. Since the formatting in `Auto` mode is triggered at the same time as the generation, the immediate image might not have its prompts updated.
 
 2. Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, meaning the formatting will cause them to be triggered. You can disable updating the actual prompts in the `Prompt Format` settings to prevent this. Though you may need to manually type something else for the prompt to get actually updated.
+
+<hr>
+
+<details>
+<summary><b>Booru</b></summary>
+
+- [x] Automatically clean up unwanted texts
+  - Structure is based on [gelbooru](https://gelbooru.com/)
+
+<p align="center"><img src="booru.png" width=512></p>
+
+</details>

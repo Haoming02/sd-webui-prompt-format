@@ -25,7 +25,7 @@
 - [x] 按下`Auto Format`以在手動與自動間切換
   - `自動`: 每次按下 **生成 (Generate)** 時處裡
   - `手動`: 手動按下 **Format** 時才處裡
-- [x] **新功能:** 處裡貼上的咒語
+- [x] **新功能:** 對貼上的咒語進行處裡
 - [x] 在 **Settings** 頁面 <ins>System</ins> 下的 `Prompt Format` 區可以 開啟/關閉 上述功能
 - [x] 按下 `Alt` + `Shift` + `F` 亦可觸發格式化
 - [x] 為指定單字新增 "[同義詞](#同義詞)"
@@ -58,3 +58,15 @@
 1. 由於 `自動`校正 和 生成 是同時觸發，當下所生產的第一張圖片之咒語可能不會是已更新的。
 
 2. 有些擴充 *(如. [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* 追蹤文字的編輯事件，意即文字校正會導致它們啟動。你可以到設定關閉咒語的自動更新。
+
+<hr>
+
+<details>
+<summary><b>Booru</b></summary>
+
+- [x] 自動清除多餘字詞
+  - 文字結構基於 [gelbooru](https://gelbooru.com/)
+
+<p align="center"><img src="booru.png" width=512></p>
+
+</details>

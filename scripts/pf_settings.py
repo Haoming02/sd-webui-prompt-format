@@ -9,9 +9,13 @@ def on_settings():
 
     opts.add_option(
         "pf_disableupdateinput",
-        OptionInfo(False, "Disable the automatic updates of the prompts", **args).info(
-            'enable this if you have Extensions, such as <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>, that subscribe to text editing events'
-        ),
+        OptionInfo(False, "Disable the automatic updates of the prompts", **args)
+        .info(
+            """enable this if you have Extensions, such as
+            <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>,
+            that subscribe to text editing events"""
+        )
+        .needs_reload_ui(),
     )
 
     opts.add_option(
@@ -31,14 +35,14 @@ def on_settings():
 
     opts.add_option(
         "pf_appendcomma",
-        OptionInfo(True, "Append a comma at the end of each line", **args).info(
-            "only active when there are multiple lines"
-        ),
+        OptionInfo(True, "Append a comma at the end of each line", **args)
+        .info("only take effect when there are multiple lines")
+        .needs_reload_ui(),
     )
 
     opts.add_option(
         "pf_onpaste",
-        OptionInfo(False, "Trigger a Format when pasting text", **args),
+        OptionInfo(False, "Format the pasted text", **args).needs_reload_ui(),
     )
 
     opts.add_option(
@@ -52,7 +56,7 @@ def on_settings():
                 "max_lines": 1,
                 "lines": 1,
             },
-            **args
+            **args,
         ),
     )
 
@@ -67,7 +71,7 @@ def on_settings():
                 "max_lines": 16,
                 "lines": 4,
             },
-            **args
+            **args,
         )
         .link("RegExr", "https://regexr.com/")
         .info(
@@ -75,6 +79,15 @@ def on_settings():
              (based on regular expression, meaning you need to escape special characters)
              (comma is not allowed"""
         ),
+    )
+
+    opts.add_option(
+        "pf_booru",
+        OptionInfo(
+            False,
+            'Process the "Booru Structure"',
+            **args,
+        ).info("requires format on paste) (<b>Experimental</b>"),
     )
 
 
