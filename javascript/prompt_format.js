@@ -146,7 +146,7 @@ class LeFormatter {
 			if (/^\s+$/.test(part))
 				return part;
 
-			if (!this.#cachedCards.includes(part))
+			if (!this.#cachedCards.includes(part.trim()))
 				part = part.replaceAll('_', ' ');
 
 			return part;
@@ -225,8 +225,8 @@ onUiLoaded(() => {
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
-					paste = paste.replaceAll("(", "\\(");
-					paste = paste.replaceAll(")", "\\)");
+					paste = paste.replace(/(?<!\\)\(/g, '\\(');
+					paste = paste.replace(/(?<!\\)\)/g, '\\)');
 				}
 
 				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
