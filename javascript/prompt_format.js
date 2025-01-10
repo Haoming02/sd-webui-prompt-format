@@ -221,12 +221,14 @@ onUiLoaded(() => {
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
 
 				if (config.booru) {
-					paste = paste.replace(/\s[\d.]+[kM]?|\?\s+/g, ", ");
+					paste = paste.replace(/\s[\d.]{2,}[kM]?|\?\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
-					paste = paste.replace(/(?<!\\)\(/g, '\\(');
-					paste = paste.replace(/(?<!\\)\)/g, '\\)');
+					const name_franchise = /\w+?\s\(.*?\)/g;
+					paste = paste.replace(name_franchise, (match) => {
+						return match.replace(/[()]/g, '\\$&');
+					});
 				}
 
 				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
