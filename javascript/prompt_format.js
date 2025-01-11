@@ -221,7 +221,7 @@ onUiLoaded(() => {
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
 
 				if (config.booru) {
-					paste = paste.replace(/\s[\d.]{2,}[kM]?|\?\s+/g, ", ");
+					paste = paste.replace(/\s[\d.]{2,}[kM]?|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
