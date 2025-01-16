@@ -88,6 +88,7 @@ class LeFormatter {
 		while (/\(\s*\)|\[\s*\]/.test(input))
 			input = input.replace(/\(\s*\)|\[\s*\]/g, '');
 
+		input = input.replace(/\\\(([^\\\)]+?):([^\\\)]+?)\\\)/g, '\\($1: $2\\)');
 		return input.split(',').map(word => word.trim()).filter(word => word).join(', ');
 	}
 
