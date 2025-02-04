@@ -215,18 +215,21 @@ onUiLoaded(() => {
 	}
 
 	if (config.paste) {
+		const paramPatterns = /\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
 		for (const field of config.promptFields) {
 			field.addEventListener('paste', (event) => {
-				event.preventDefault();
-
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
+				if ([...paste.matchAll(paramPatterns)].length > 3)
+					return;  // Infotext
+
+				event.preventDefault();
 
 				if (config.booru) {
 					paste = paste.replace(/\s[\d.]{2,}[kM]?|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
-					const name_franchise = /\w+?\s\(.*?\)/g;
+					const name_franchise = /\w+?[\_\s]\(.*?\)/g;
 					paste = paste.replace(name_franchise, (match) => {
 						return match.replace(/[()]/g, '\\$&');
 					});
