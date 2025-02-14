@@ -88,8 +88,18 @@ class LeFormatter {
 		while (/\(\s*\)|\[\s*\]/.test(input))
 			input = input.replace(/\(\s*\)|\[\s*\]/g, '');
 
+		// Space after Comma in Escaped Brackets (for franchise)
 		input = input.replace(/\\\(([^\\\)]+?):([^\\\)]+?)\\\)/g, '\\($1: $2\\)');
-		return input.split(',').map(word => word.trim()).filter(word => word).join(', ');
+		// Prune empty Chunks
+		input = input.split(',').map(word => word.trim()).filter(word => word).join(', ')
+		// LoRA Block Weights
+		input = input.replace(/\<[^\>]+\>/g, (match) => {
+			return match.replace(/\,\s+/g, ',');
+		});
+		// Remove empty before Colon
+		input = input.replace(/\,\s*\:/g, ':');
+
+		return input;
 	}
 
 	/** @param {string[]} input @returns {string[]} */
