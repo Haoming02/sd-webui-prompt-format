@@ -97,7 +97,7 @@ class LeFormatter {
 			return match.replace(/\,\s+/g, ',');
 		});
 		// Remove empty before Colon
-		input = input.replace(/\,\s*\:/g, ':');
+		input = input.replace(/\,\s*\:(\d)/g, ':$1');
 
 		return input;
 	}
