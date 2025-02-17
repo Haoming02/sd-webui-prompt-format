@@ -56,19 +56,25 @@ class LeFormatter {
 
 		// Fix Commas inside Brackets
 		input = input
-			.replace(/[,\s]+\)/g, '),')
-			.replace(/[,\s]+\]/g, '],')
-			.replace(/\([,\s]+/g, ',(')
-			.replace(/\[[,\s]+/g, ',[');
+			.replace(/,+\s*\)/g, '),')
+			.replace(/,+\s*\]/g, '],')
+			.replace(/,+\s*\>/g, '>,')
+			.replace(/,+\s*\}/g, '},')
+			.replace(/\(\s*,+/g, ',(')
+			.replace(/\[\s*,+/g, ',[')
+			.replace(/\<\s*,+/g, ',<')
+			.replace(/\{\s*,+/g, ',{');
 
 		// Fix Bracket & Space
 		input = input
 			.replace(/\s+\)/g, ')')
 			.replace(/\s+\]/g, ']')
+			.replace(/\s+\>/g, '>')
+			.replace(/\s+\}/g, '}')
 			.replace(/\(\s+/g, '(')
 			.replace(/\[\s+/g, '[')
 			.replace(/\<\s+/g, '<')
-			.replace(/\s+\>/g, '>');
+			.replace(/\{\s+/g, '{');
 
 		// Remove Space around Syntax
 		input = input

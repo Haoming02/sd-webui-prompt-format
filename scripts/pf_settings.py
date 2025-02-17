@@ -3,7 +3,7 @@ from modules.script_callbacks import on_ui_settings
 
 def on_settings():
     from modules.shared import OptionInfo, opts
-    import gradio as gr
+    from gradio import Textbox
 
     args = {"section": ("pf", "Prompt Format"), "category_id": "system"}
 
@@ -36,7 +36,7 @@ def on_settings():
     opts.add_option(
         "pf_appendcomma",
         OptionInfo(True, "Append a comma at the end of each line", **args)
-        .info("only take effect when there are multiple lines")
+        .info("only take effect when there are more than 1 line")
         .needs_reload_ui(),
     )
 
@@ -50,7 +50,7 @@ def on_settings():
         OptionInfo(
             default="",
             label="Exclude Tags from Remove Underscores",
-            component=gr.Textbox,
+            component=Textbox,
             component_args={
                 "placeholder": "score_9, score_8_up, score_7_up",
                 "max_lines": 1,
@@ -65,7 +65,7 @@ def on_settings():
         OptionInfo(
             default="",
             label="Tag Alias for Remove Duplicates",
-            component=gr.Textbox,
+            component=Textbox,
             component_args={
                 "placeholder": "1girl: girl, woman, lady\nadult: \\d*\\s*(y\\.?o\\.?|[Yy]ear[s]? [Oo]ld)",
                 "max_lines": 16,
@@ -73,12 +73,8 @@ def on_settings():
             },
             **args,
         )
-        .link("RegExr", "https://regexr.com/")
-        .info(
-            """treat tags on the right as duplicates of the main tag on the left)
-             (based on regular expression, meaning you need to escape special characters)
-             (comma is not allowed"""
-        ),
+        .info("treat tags on the right as duplicates of the main tag on the left")
+        .link("RegExr", "https://regexr.com/"),
     )
 
     opts.add_option(
