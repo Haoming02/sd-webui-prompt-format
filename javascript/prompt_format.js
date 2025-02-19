@@ -240,6 +240,9 @@ onUiLoaded(() => {
 
 				event.preventDefault();
 
+				const commaStart = paste.match(/^\s*\,/);
+				const commaEnd = paste.match(/\,\s*$/);
+
 				if (config.booru) {
 					paste = paste.replace(/\s[\d.]{2,}[kM]?|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
@@ -252,6 +255,7 @@ onUiLoaded(() => {
 				}
 
 				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
+				paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`
 
 				const currentText = field.value;
 				const cursorPosition = field.selectionStart;
