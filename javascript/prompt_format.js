@@ -48,6 +48,26 @@ class LeFormatter {
 			updateInput(textArea);
 	}
 
+	/** @param {string[]} tags @returns {string[]} */
+	static #joinExtraNet(tags) {
+		let isNet = false;
+		let i = 0;
+
+		while (i < tags.length) {
+			if (!isNet) {
+				if (tags[i].startsWith('<'))
+					isNet = true;
+				i++;
+			}
+			else {
+				isNet = !tags[i].endsWith('>');
+				tags[i - 1] = `${tags[i - 1]}, ${tags.splice(i, 1)[0]}`;
+			}
+		}
+
+		return tags;
+	}
+
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static formatString(input, dedupe, removeUnderscore) {
 
@@ -83,6 +103,9 @@ class LeFormatter {
 
 		// Sentence -> Tags
 		let tags = input.split(',').map(word => word.trim());
+
+		// ["<lora:name:weight:lbw=1", "2", "3>"] -> ["<lora:name:weight:lbw=1,2,3>"]
+		tags = this.#joinExtraNet(tags);
 
 		// Remove Duplicate
 		tags = dedupe ? this.#dedupe(tags) : tags;
@@ -173,65 +196,70 @@ class LeFormatter {
 	}
 }
 
-onUiLoaded(() => {
+(function () {
+	onUiLoaded(() => {
 
-	const config = new pfConfigs();
-	const formatter = pfUI.setupUIs(config.autoRun, config.dedupe, config.removeUnderscore);
+		const config = new pfConfigs();
+		const formatter = pfUI.setupUIs(config.autoRun, config.dedupe, config.removeUnderscore);
 
-	document.addEventListener('keydown', (e) => {
-		if (e.altKey && e.shiftKey && e.code === 'KeyF') {
-			e.preventDefault();
-			for (const field of config.promptFields)
-				LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma);
-		}
-	});
-
-	formatter.auto.addEventListener("change", () => {
-		config.autoRun = formatter.auto.checked;
-		formatter.manual.style.display = config.autoRun ? 'none' : 'flex';
-	});
-
-	formatter.dedupe.addEventListener("change", () => {
-		config.dedupe = formatter.dedupe.checked;
-	});
-
-	formatter.underscore.addEventListener("change", () => {
-		config.removeUnderscore = formatter.underscore.checked;
-		formatter.refresh.style.display = config.removeUnderscore ? 'flex' : 'none';
-	});
-
-	formatter.manual.addEventListener("click", () => {
-		for (const field of config.promptFields)
-			LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
-	});
-
-	formatter.refresh.addEventListener("click", () => {
-		LeFormatter.forceReload();
-	});
-
-	const tools = document.getElementById('quicksettings');
-	tools.after(formatter);
-
-	/** Expandable List of IDs in 1 place */
-	const IDs = [
-		'txt2img_generate',
-		'txt2img_enqueue',
-		'img2img_generate',
-		'img2img_enqueue'
-	];
-
-	for (const id of IDs) {
-		const button = document.getElementById(id);
-		button?.addEventListener('click', () => {
-			if (config.autoRun) {
+		document.addEventListener('keydown', (e) => {
+			if (e.altKey && e.shiftKey && e.code === 'KeyF') {
+				e.preventDefault();
 				for (const field of config.promptFields)
-					LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
+					LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, true, config.comma);
 			}
 		});
-	}
 
-	if (config.paste) {
+		formatter.auto.addEventListener("change", () => {
+			config.autoRun = formatter.auto.checked;
+			formatter.manual.style.display = config.autoRun ? 'none' : 'flex';
+		});
+
+		formatter.dedupe.addEventListener("change", () => {
+			config.dedupe = formatter.dedupe.checked;
+		});
+
+		formatter.underscore.addEventListener("change", () => {
+			config.removeUnderscore = formatter.underscore.checked;
+			formatter.refresh.style.display = config.removeUnderscore ? 'flex' : 'none';
+		});
+
+		formatter.manual.addEventListener("click", () => {
+			for (const field of config.promptFields)
+				LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
+		});
+
+		formatter.refresh.addEventListener("click", () => {
+			LeFormatter.forceReload();
+		});
+
+		const tools = document.getElementById('quicksettings');
+		tools.after(formatter);
+
+		/** Expandable List of IDs in 1 place */
+		const IDs = [
+			'txt2img_generate',
+			'txt2img_enqueue',
+			'img2img_generate',
+			'img2img_enqueue'
+		];
+
+		for (const id of IDs) {
+			const button = document.getElementById(id);
+			button?.addEventListener('click', () => {
+				if (config.autoRun) {
+					for (const field of config.promptFields)
+						LeFormatter.formatPipeline(field, config.dedupe, config.removeUnderscore, config.refresh, config.comma);
+				}
+			});
+		}
+
+		if (!config.paste)
+			return;
+
+		/** https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/v1.10.1/modules/infotext_utils.py#L16 */
 		const paramPatterns = /\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
+
 		for (const field of config.promptFields) {
 			field.addEventListener('paste', (event) => {
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
@@ -244,7 +272,7 @@ onUiLoaded(() => {
 				const commaEnd = paste.match(/\,\s*$/);
 
 				if (config.booru) {
-					paste = paste.replace(/\s[\d.]{2,}[kM]?|[\?\+\-]\s+/g, ", ");
+					paste = paste.replace(/\s*[\d.]+[kM]\s*|\s*[\d]{3,}\s*|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
@@ -267,6 +295,6 @@ onUiLoaded(() => {
 				updateInput(field);
 			});
 		}
-	}
 
-});
+	});
+})();
