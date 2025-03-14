@@ -7,10 +7,9 @@
 #le-formatter button {
     height: 24px;
     padding: 2px 8px;
-    border-radius: 0.2em;
+    border-radius: 0.25em;
     border: var(--button-border-width) solid var(--button-secondary-border-color);
     background: var(--button-secondary-background-fill);
-
     display: flex;
     justify-content: center;
     align-items: center;
