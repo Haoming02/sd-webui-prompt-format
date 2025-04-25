@@ -68,11 +68,28 @@ class LeFormatter {
 		return tags;
 	}
 
+	/** @param {string} input @returns {string} */
+	static #toExpression(input) {
+		return input
+			.replace(/[,\n]\s*> <\s*[,\n]/g, ", $SHY$,")
+			.replace(/[,\n]\s*:3\s*[,\n]/g, ", $CAT$,");
+	}
+
+	/** @param {string} input @returns {string} */
+	static #fromExpression(input) {
+		return input
+			.replace("$SHY$", "> <")
+			.replace("$CAT$", ":3");
+	}
+
 	/** @param {string} input @param {boolean} dedupe @param {boolean} removeUnderscore @returns {string} */
 	static formatString(input, dedupe, removeUnderscore) {
 
 		// Remove Underscore
 		input = removeUnderscore ? this.#removeUnderscore(input) : input;
+
+		// Special Tags
+		input = this.#toExpression(input);
 
 		// Fix Commas inside Brackets
 		input = input
@@ -127,6 +144,8 @@ class LeFormatter {
 		});
 		// Remove empty before Colon
 		input = input.replace(/\,\s*\:(\d)/g, ':$1');
+
+		input = this.#fromExpression(input);
 
 		return input;
 	}
