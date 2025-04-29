@@ -1,27 +1,25 @@
 class LeFormatter {
 
-	static #cachedCardsInternal = null;
-	static #aliasInternal = null;
+	static #_alias = null;
+	static #_cachedCards = null;
 
 	static forceReload() {
-		this.#cachedCardsInternal = null;
-		this.#aliasInternal = null;
+		this.#_alias = null;
+		this.#_cachedCards = null;
 	}
 
 	/** @returns {string[]} */
 	static get #cachedCards() {
-		if (this.#cachedCardsInternal == null)
-			this.#cachedCardsInternal = pfConfigs.cacheCards();
-
-		return this.#cachedCardsInternal;
+		if (this.#_cachedCards == null)
+			this.#_cachedCards = pfConfigs.cacheCards();
+		return this.#_cachedCards;
 	}
 
 	/** @returns {Map<RegExp, string>} */
 	static get #alias() {
-		if (this.#aliasInternal == null)
-			this.#aliasInternal = pfConfigs.getTagAlias();
-
-		return this.#aliasInternal;
+		if (this.#_alias == null)
+			this.#_alias = pfConfigs.getTagAlias();
+		return this.#_alias;
 	}
 
 	/**
@@ -325,5 +323,23 @@ class LeFormatter {
 			});
 		}
 
+		let refreshTimer;
+		function onRefresh() { setTimeout(() => LeFormatter.forceReload(), 100); }
+
+		const observer = new MutationObserver((mutationsList) => {
+			for (const mutation of mutationsList) {
+				if (mutation.type !== "childList")
+					continue;
+				if (refreshTimer) clearTimeout(refreshTimer);
+				refreshTimer = setTimeout(onRefresh, 250);
+				break;
+			}
+		});
+
+		const lora = document.getElementById('txt2img_lora_cards_html');
+		const ti = document.getElementById('txt2img_textual_inversion_cards_html');
+
+		observer.observe(lora, { childList: true, subtree: true });
+		observer.observe(ti, { childList: true, subtree: true });
 	});
 })();
