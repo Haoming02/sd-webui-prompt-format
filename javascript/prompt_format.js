@@ -281,6 +281,7 @@ class LeFormatter {
 
 		for (const field of config.promptFields) {
 			field.addEventListener('paste', (event) => {
+				/** @type {string} */
 				let paste = (event.clipboardData || window.clipboardData).getData('text');
 				if ([...paste.matchAll(paramPatterns)].length > 3)
 					return;  // Infotext
@@ -289,6 +290,8 @@ class LeFormatter {
 
 				const commaStart = paste.match(/^\s*\,/);
 				const commaEnd = paste.match(/\,\s*$/);
+
+				const multiline = !paste.includes(",");
 
 				if (config.booru) {
 					paste = paste.replace(/\s*[\d.]+[kM]\s*|\s*[\d]{3,}\s*|[\?\+\-]\s+/g, ", ");
@@ -301,7 +304,14 @@ class LeFormatter {
 					});
 				}
 
-				paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
+				if (multiline) {
+					const lines = [];
+					for (const line of paste.split("\n"))
+						lines.push(LeFormatter.formatString(line, config.dedupe, config.removeUnderscore));
+					paste = lines.join("\n");
+				} else
+					paste = LeFormatter.formatString(paste, config.dedupe, config.removeUnderscore);
+
 				paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`
 
 				const currentText = field.value;
