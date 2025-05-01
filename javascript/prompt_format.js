@@ -292,7 +292,7 @@ class LeFormatter {
 				const multiline = !paste.includes(",");
 
 				if (config.booru) {
-					paste = paste.replace(/\s*[\d.]+[kM]\s*|\s*[\d]{3,}\s*|[\?\+\-]\s+/g, ", ");
+					paste = paste.replace(/\s*[\d.]+[kM]\s*|(?:^|,|\s+)\d{2,}(?:\s+|,|\?|$)|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
 
