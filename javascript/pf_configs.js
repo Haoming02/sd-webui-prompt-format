@@ -1,94 +1,51 @@
 class pfConfigs {
-
     constructor() {
-        this.refresh = this.#shouldRefresh();
-        this.autoRun = this.#defaultAuto();
-        this.dedupe = this.#defaultDedupe();
-        this.removeUnderscore = this.#defaultRemoveUnderscore();
-        this.comma = this.#appendComma();
-        this.paste = this.#onpaste();
-        this.booru = this.#procBooru();
+		/** @type {HTMLTextAreaElement[]} */ this.promptFields = this.#getPromptFields();
 
-        this.promptFields = this.#getPromptFields();
+		/** @type {boolean} */ this.refresh = !this.#getConfig("setting_pf_disableupdateinput");
+		/** @type {boolean} */ this.autoRun = this.#getConfig("setting_pf_startinauto");
+		/** @type {boolean} */ this.dedupe = this.#getConfig("setting_pf_startwithdedupe");
+		/** @type {boolean} */ this.rmUnderscore = this.#getConfig("setting_pf_startwithrmudscr");
+		/** @type {boolean} */ this.comma = this.#getConfig("setting_pf_appendcomma");
+		/** @type {boolean} */ this.paste = this.#getConfig("setting_pf_onpaste");
+		/** @type {boolean} */ this.booru = this.#getConfig("setting_pf_booru");
     }
 
-    /** @returns {boolean} */
-    #shouldRefresh() {
-        const config = document.getElementById('setting_pf_disableupdateinput').querySelector('input[type=checkbox]');
-        return !config.checked;
-    }
-
-    /** @returns {boolean} */
-    #defaultAuto() {
-        const config = document.getElementById('setting_pf_startinauto').querySelector('input[type=checkbox]');
+    #getConfig(id) {
+        const config = document
+            .getElementById(id)
+            .querySelector("input[type=checkbox]");
         return config.checked;
     }
 
-    /** @returns {boolean} */
-    #defaultDedupe() {
-        const config = document.getElementById('setting_pf_startwithdedupe').querySelector('input[type=checkbox]');
-        return config.checked;
-    }
-
-    /** @returns {boolean} */
-    #defaultRemoveUnderscore() {
-        const config = document.getElementById('setting_pf_startwithrmudscr').querySelector('input[type=checkbox]');
-        return config.checked;
-    }
-
-    /** @returns {boolean} */
-    #appendComma() {
-        const config = document.getElementById('setting_pf_appendcomma').querySelector('input[type=checkbox]');
-        return config.checked;
-    }
-
-    /** @returns {boolean} */
-    #onpaste() {
-        const config = document.getElementById('setting_pf_onpaste').querySelector('input[type=checkbox]');
-        return config.checked;
-    }
-
-    /** @returns {boolean} */
-    #procBooru() {
-        const config = document.getElementById('setting_pf_booru').querySelector('input[type=checkbox]');
-        return config.checked;
-    }
-
-    /**
-     * Cache All Prompt Fields
-     * @returns {HTMLTextAreaElement[]}
-     */
     #getPromptFields() {
         const textareas = [];
 
         /** Expandable List of IDs in 1 place */
         const IDs = [
-            'txt2img_prompt',
-            'txt2img_neg_prompt',
-            'img2img_prompt',
-            'img2img_neg_prompt',
-            'hires_prompt',
-            'hires_neg_prompt'
+            "txt2img_prompt",
+            "txt2img_neg_prompt",
+            "img2img_prompt",
+            "img2img_neg_prompt",
+            "hires_prompt",
+            "hires_neg_prompt",
         ];
 
         for (const id of IDs) {
-            const textArea = document.getElementById(id)?.querySelector('textarea');
-            if (textArea != null)
-                textareas.push(textArea);
+            const textArea = document.getElementById(id)?.querySelector("textarea");
+            if (textArea != null) textareas.push(textArea);
         }
 
         const ADetailer = [
             "script_txt2img_adetailer_ad_main_accordion",
-            "script_img2img_adetailer_ad_main_accordion"
+            "script_img2img_adetailer_ad_main_accordion",
         ];
 
         for (const id of ADetailer) {
-            const fields = document.getElementById(id)?.querySelectorAll('textarea');
-            if (fields == null)
-                continue;
+            const fields = document.getElementById(id)?.querySelectorAll("textarea");
+            if (fields == null) continue;
             for (const textArea of fields) {
-                if (textArea.placeholder.length > 0)
-                    textareas.push(textArea);
+                if (textArea.placeholder.length > 0) textareas.push(textArea);
             }
         }
 
@@ -97,40 +54,35 @@ class pfConfigs {
 
     /** @returns {string[]} */
     static cacheCards() {
-        const extras = document.getElementById('txt2img_extra_tabs');
-        if (!extras)
-            return [];
+        const cards = document
+            .getElementById("pf_embeddings")
+            .querySelector("textarea")
+            .value.split("\n");
 
-        const cards = [];
-        for (const card of extras.querySelectorAll('span.name')) {
-            if (card.textContent.includes('_'))
-                cards.push(card.textContent);
-        }
-
-        const config = document.getElementById('setting_pf_exclusion').querySelector('input').value;
-        if (config.trim()) {
-            for (const tag of config.split(","))
-                cards.push(tag.trim());
-        }
+        const config = document
+            .getElementById("setting_pf_exclusion")
+            .querySelector("textarea").value;
+        for (const tag of config.split(",").map((t) => t.trim()))
+            if (tag) cards.push(tag);
 
         return cards;
     }
 
-    /** @returns {Map<RegExp, string>} */
+    /** @returns {{RegExp: string}} */
     static getTagAlias() {
         const alias = new Map();
 
-        const config = document.getElementById('setting_pf_alias').querySelector('textarea').value;
-        if (!config.trim())
-            return alias;
+        const config = document
+            .getElementById("setting_pf_alias")
+            .querySelector("textarea").value;
+        if (!config.includes(":")) return alias;
 
         for (const line of config.split("\n")) {
             const [tag, words] = line.split(":");
             const mainTag = tag.trim();
 
-            for (const word of words.split(",").map(part => part.trim())) {
-                if (word === mainTag)
-                    continue;
+            for (const word of words.split(",").map((part) => part.trim())) {
+                if (word === mainTag) continue;
 
                 const pattern = this.#parseRegExp(word);
                 alias.set(pattern, mainTag);
@@ -142,9 +94,6 @@ class pfConfigs {
 
     /** @param {string} input @returns {RegExp} */
     static #parseRegExp(input) {
-        const startAnchor = input.startsWith('^');
-        const endAnchor = input.endsWith('$');
-        return new RegExp(`${startAnchor ? '' : '^'}${input}${endAnchor ? '' : '$'}`);
+        return new RegExp(`^${input.trimStart("^").trimEnd("$")}$`);
     }
-
 }
