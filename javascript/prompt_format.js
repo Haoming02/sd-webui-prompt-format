@@ -169,6 +169,11 @@ class LeFormatter {
 				continue;
 			}
 
+			if (!isNaN(cleanedTag)) {
+				results.push(tag);
+				continue;
+			}
+
 			let substitute = null;
 			for (const [pattern, mainTag] of this.#alias) {
 				if (pattern.test(cleanedTag)) {
