@@ -60,10 +60,14 @@ class LeFormatter {
 	static #networkDB = new Map();
 
 	/** @param {string} input @returns {string} */
-	static #toNetwork(input) {
+	static toNetwork(input) {
 		this.#networkDB.clear();
 
-		const output = input.replace(/\s*<.+?>\s*/g, (match) => {
+		const output = input.replace(/(lbw=)?\s*(\d+(\.\d+)?)(\s*,\s*(\d+(\.\d+)?))+/g, (match) => {
+			const UID = `@NET${this.#networkDB.size}WORK@`;
+			this.#networkDB.set(UID, match.trim());
+			return UID;
+		}).replace(/\s*<.+?>\s*/g, (match) => {
 			const UID = `@NET${this.#networkDB.size}WORK@`;
 			this.#networkDB.set(UID, match.trim());
 			return UID;
@@ -73,10 +77,10 @@ class LeFormatter {
 	}
 
 	/** @param {string} input @returns {string} */
-	static #fromNetwork(input) {
+	static fromNetwork(input) {
 		const len = this.#networkDB.size;
 
-		for (let i = 0; i < len; i++) {
+		for (let i = len; i >= 0; i--) {
 			const UID = `@NET${i}WORK@`;
 			input = input.replace(UID, this.#networkDB.get(UID));
 		}
@@ -87,7 +91,7 @@ class LeFormatter {
 	/** @param {string} input @param {boolean} dedupe @param {boolean} rmUnderscore @returns {string} */
 	static formatString(input, dedupe, rmUnderscore) {
 		// Substitute LoRAs
-		input = this.#toNetwork(input);
+		input = this.toNetwork(input);
 
 		// Remove Underscore
 		input = rmUnderscore ? this.#rmUnderscore(input) : input;
@@ -96,7 +100,7 @@ class LeFormatter {
 		input = this.#toExpression(input);
 
 		// Restore LoRAs
-		input = this.#fromNetwork(input);
+		input = this.fromNetwork(input);
 
 		// Fix Commas inside Brackets
 		input = input
@@ -309,6 +313,7 @@ class LeFormatter {
 				const multiline = !paste.includes(",");
 
 				if (config.booru) {
+					paste = LeFormatter.toNetwork(paste);
 					paste = paste.replace(/\s*[\d.]+[kM]\s*|(?:^|,|\s+)\d+(?:\s+|,|\?|$)|[\?\+\-]\s+/g, ", ");
 					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
 						paste = paste.replace(excl, "");
@@ -317,6 +322,7 @@ class LeFormatter {
 					paste = paste.replace(name_franchise, (match) => {
 						return match.replace(/[()]/g, "\\$&");
 					});
+					paste = LeFormatter.fromNetwork(paste);
 				}
 
 				if (multiline) {
