@@ -45,8 +45,8 @@ class LeFormatter {
 	/** @param {string} input @returns {string} */
 	static #toExpression(input) {
 		return input
-			.replace(/[,\n^]\s*> <\s*[,\n$]/g, ", $SHY$,")
-			.replace(/[,\n^]\s*:3\s*[,\n$]/g, ", $CAT$,");
+			.replace(/(?:,|\n|^)\s*> <\s*(?:,|\n|$)/g, ", $SHY$,")
+			.replace(/(?:,|\n|^)\s*:3\s*(?:,|\n|$)/g, ", $CAT$,");
 	}
 
 	/** @param {string} input @returns {string} */
