@@ -12,9 +12,7 @@ class pfConfigs {
     }
 
     #getConfig(id) {
-        const config = document
-            .getElementById(id)
-            .querySelector("input[type=checkbox]");
+        const config = document.getElementById(id).querySelector("input[type=checkbox]");
         return config.checked;
     }
 
@@ -54,17 +52,9 @@ class pfConfigs {
 
     /** @returns {string[]} */
     static cacheCards() {
-        const cards = document
-            .getElementById("pf_embeddings")
-            .querySelector("textarea")
-            .value.split("\n");
-
-        const config = document
-            .getElementById("setting_pf_exclusion")
-            .querySelector("textarea").value;
-        for (const tag of config.split(",").map((t) => t.trim()))
-            if (tag) cards.push(tag);
-
+        const cards = document.getElementById("pf_embeddings").querySelector("textarea").value.split("\n");
+        const config = document.getElementById("setting_pf_exclusion").querySelector("textarea").value;
+        for (const tag of config.split(",").map((t) => t.trim())) if (tag) cards.push(tag);
         return cards;
     }
 
@@ -72,9 +62,7 @@ class pfConfigs {
     static getTagAlias() {
         const alias = new Map();
 
-        const config = document
-            .getElementById("setting_pf_alias")
-            .querySelector("textarea").value;
+        const config = document.getElementById("setting_pf_alias").querySelector("textarea").value;
         if (!config.includes(":")) return alias;
 
         for (const line of config.split("\n")) {

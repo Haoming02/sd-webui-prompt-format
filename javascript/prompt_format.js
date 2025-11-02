@@ -35,7 +35,7 @@ class LeFormatter {
 			const val = lines.join(",\n");
 			textArea.value = val
 				.replace(/\n,\n/g, "\n\n")
-				.replace(/\s*,\s*$/g, "")
+				.replace(/\>,\n/g, ">\n")
 				.replace(/\s*,\s*$/g, "");
 		}
 
@@ -63,15 +63,17 @@ class LeFormatter {
 	static toNetwork(input) {
 		this.#networkDB.clear();
 
-		const output = input.replace(/(lbw=)?\s*(\d+(\.\d+)?)(\s*,\s*(\d+(\.\d+)?))+/g, (match) => {
-			const UID = `@NET${this.#networkDB.size}WORK@`;
-			this.#networkDB.set(UID, match.trim());
-			return UID;
-		}).replace(/\s*<.+?>\s*/g, (match) => {
-			const UID = `@NET${this.#networkDB.size}WORK@`;
-			this.#networkDB.set(UID, match.trim());
-			return UID;
-		});
+		const output = input
+			.replace(/(lbw=)?\s*(\d+(\.\d+)?)(\s*,\s*(\d+(\.\d+)?))+/g, (match) => {
+				const UID = `@NET${this.#networkDB.size}WORK@`;
+				this.#networkDB.set(UID, match.trim());
+				return UID;
+			})
+			.replace(/\s*<.+?>\s*/g, (match) => {
+				const UID = `@NET${this.#networkDB.size}WORK@`;
+				this.#networkDB.set(UID, match.trim());
+				return UID;
+			});
 
 		return output;
 	}
@@ -90,6 +92,9 @@ class LeFormatter {
 
 	/** @param {string} input @param {boolean} dedupe @param {boolean} rmUnderscore @returns {string} */
 	static formatString(input, dedupe, rmUnderscore) {
+		// Remove Whitespaces
+		input = input.replace(/[^\S\n]/g, " ");
+
 		// Substitute LoRAs
 		input = this.toNetwork(input);
 
@@ -102,27 +107,11 @@ class LeFormatter {
 		// Restore LoRAs
 		input = this.fromNetwork(input);
 
-		// Fix Commas inside Brackets
-		input = input
-			.replace(/,+\s*\)/g, "),")
-			.replace(/,+\s*\]/g, "],")
-			.replace(/,+\s*\>/g, ">,")
-			.replace(/,+\s*\}/g, "},")
-			.replace(/\(\s*,+/g, ",(")
-			.replace(/\[\s*,+/g, ",[")
-			.replace(/\<\s*,+/g, ",<")
-			.replace(/\{\s*,+/g, ",{");
-
 		// Fix Bracket & Space
-		input = input
-			.replace(/\s+\)/g, ")")
-			.replace(/\s+\]/g, "]")
-			.replace(/\s+\>/g, ">")
-			.replace(/\s+\}/g, "}")
-			.replace(/\(\s+/g, "(")
-			.replace(/\[\s+/g, "[")
-			.replace(/\<\s+/g, "<")
-			.replace(/\{\s+/g, "{");
+		input = input.replace(/\s+(\)|\]|\>|\})/g, "$1").replace(/(\(|\[|\<|\{)\s+/g, "$1");
+
+		// Fix Commas inside Brackets
+		input = input.replace(/,+(\)|\]|\>|\})/g, "$1,").replace(/(\(|\[|\<|\{),+/g, ",$1");
 
 		// Remove Space around Syntax
 		input = input.replace(/\s*\|\s*/g, "|").replace(/\s*\:\s*/g, ":");
@@ -137,14 +126,17 @@ class LeFormatter {
 		input = tags.join(", ").replace(/\s+/g, " ");
 
 		// Remove Empty Brackets
-		while (/\(\s*\)|\[\s*\]/.test(input))
-			input = input.replace(/\(\s*\)|\[\s*\]/g, "");
+		while (/\(\s*\)|\[\s*\]/.test(input)) input = input.replace(/\(\s*\)|\[\s*\]/g, "");
 
 		// Space after Comma in Escaped Brackets (for franchise)
 		input = input.replace(/\\\(([^\\\)]+?):([^\\\)]+?)\\\)/g, "\\($1: $2\\)");
 
 		// Prune empty Chunks
-		input = input.split(",").map((word) => word.trim()).filter((word) => word).join(", ");
+		input = input
+			.split(",")
+			.map((word) => word.trim())
+			.filter((word) => word)
+			.join(", ");
 
 		// LoRA Block Weights
 		input = input.replace(/<.+?>/g, (match) => {
@@ -153,6 +145,9 @@ class LeFormatter {
 
 		// Remove empty before Colon
 		input = input.replace(/,\s*:(\d)/g, ":$1");
+
+		// Period instead of Comma
+		input = input.replaceAll(".,", ".");
 
 		input = this.#fromExpression(input);
 
@@ -166,7 +161,10 @@ class LeFormatter {
 		const results = [];
 
 		for (const tag of input) {
-			const cleanedTag = tag.replace(/\[|\]|\(|\)/g, "").replace(/\s+/g, " ").trim();
+			const cleanedTag = tag
+				.replace(/\[|\]|\(|\)/g, "")
+				.replace(/\s+/g, " ")
+				.trim();
 
 			if (KEYWORD.test(cleanedTag)) {
 				results.push(tag);
@@ -208,13 +206,11 @@ class LeFormatter {
 	static #rmUnderscore(input) {
 		if (!input.trim()) return "";
 
-		for (let i = 0; i < this.#cards.length; i++)
-			input = input.replaceAll(this.#cards[i], `@TEXTUAL${i}INVERSION@`);
+		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(this.#cards[i], `@TEXTUAL${i}INVERSION@`);
 
 		input = input.replaceAll("_", " ");
 
-		for (let i = 0; i < this.#cards.length; i++)
-			input = input.replaceAll(`@TEXTUAL${i}INVERSION@`, this.#cards[i]);
+		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(`@TEXTUAL${i}INVERSION@`, this.#cards[i]);
 
 		return input;
 	}
@@ -225,19 +221,14 @@ class LeFormatter {
 		const config = new pfConfigs();
 		const formatter = pfUI.setupUIs(config.autoRun, config.dedupe, config.rmUnderscore);
 
-		document.addEventListener("keydown", (e) => {
-			if (e.altKey && e.shiftKey && e.code === "KeyF") {
-				e.preventDefault();
-				for (const field of config.promptFields)
-					LeFormatter.formatPipeline(
-						field,
-						config.dedupe,
-						config.rmUnderscore,
-						config.refresh,
-						config.comma,
-					);
-			}
-		});
+		for (const field of config.promptFields) {
+			field.addEventListener("keydown", (e) => {
+				if (e.altKey && e.shiftKey && e.code === "KeyF") {
+					e.preventDefault();
+					LeFormatter.formatPipeline(field, config.dedupe, config.rmUnderscore, config.refresh, config.comma);
+				}
+			});
+		}
 
 		formatter.auto.addEventListener("change", () => {
 			config.autoRun = formatter.auto.checked;
@@ -255,13 +246,7 @@ class LeFormatter {
 
 		formatter.manual.addEventListener("click", () => {
 			for (const field of config.promptFields)
-				LeFormatter.formatPipeline(
-					field,
-					config.dedupe,
-					config.rmUnderscore,
-					config.refresh,
-					config.comma,
-				);
+				LeFormatter.formatPipeline(field, config.dedupe, config.rmUnderscore, config.refresh, config.comma);
 		});
 
 		formatter.refresh.addEventListener("click", () => {
@@ -284,21 +269,14 @@ class LeFormatter {
 			button?.addEventListener("click", () => {
 				if (!config.autoRun) return;
 				for (const field of config.promptFields)
-					LeFormatter.formatPipeline(
-						field,
-						config.dedupe,
-						config.rmUnderscore,
-						config.refresh,
-						config.comma,
-					);
+					LeFormatter.formatPipeline(field, config.dedupe, config.rmUnderscore, config.refresh, config.comma);
 			});
 		}
 
 		if (!config.paste) return;
 
 		/** https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/v1.10.1/modules/infotext_utils.py#L16 */
-		const paramPatterns =
-			/\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
+		const paramPatterns = /\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
 
 		for (const field of config.promptFields) {
 			field.addEventListener("paste", (event) => {
@@ -307,10 +285,10 @@ class LeFormatter {
 
 				event.preventDefault();
 
-				const commaStart = paste.match(/^\s*\,/);
-				const commaEnd = paste.match(/\,\s*$/);
+				/** @type {boolean} */ const commaStart = paste.match(/^\s*\,/);
+				/** @type {boolean} */ const commaEnd = paste.match(/\,\s*$/);
 
-				const multiline = !paste.includes(",");
+				/** @type {boolean} */ const multiline = !paste.includes(",");
 
 				if (config.booru) {
 					paste = LeFormatter.toNetwork(paste);
@@ -325,14 +303,13 @@ class LeFormatter {
 					paste = LeFormatter.fromNetwork(paste);
 				}
 
-				if (multiline) {
+				if (multiline) paste = LeFormatter.formatString(paste, config.dedupe, config.rmUnderscore);
+				else {
 					const lines = [];
-					for (const line of paste.split("\n"))
-						lines.push(LeFormatter.formatString(line, config.dedupe, config.rmUnderscore));
+					for (const line of paste.split("\n")) lines.push(LeFormatter.formatString(line, config.dedupe, config.rmUnderscore));
 					paste = lines.filter((l) => l).join("\n");
 					if (!paste.includes(",")) paste = paste.replaceAll("\n", ", ");
-				} else
-					paste = LeFormatter.formatString(paste, config.dedupe, config.rmUnderscore);
+				}
 
 				paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`;
 

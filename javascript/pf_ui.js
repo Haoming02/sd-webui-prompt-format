@@ -10,10 +10,7 @@ class pfUI {
 
 	/** @param {boolean} value @param {string} text @returns {HTMLLabelElement} */
 	static #checkbox(value, text) {
-		const label = document
-			.getElementById("pf_checkbox")
-			.querySelector("label")
-			.cloneNode(true);
+		const label = document.getElementById("pf_checkbox").querySelector("label").cloneNode(true);
 		label.classList.add("pf-checkbox");
 		label.removeAttribute("id");
 
