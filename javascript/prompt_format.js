@@ -288,7 +288,7 @@ class LeFormatter {
 				/** @type {boolean} */ const commaStart = paste.match(/^\s*\,/);
 				/** @type {boolean} */ const commaEnd = paste.match(/\,\s*$/);
 
-				/** @type {boolean} */ const multiline = !paste.includes(",");
+				/** @type {boolean} */ const onlyTags = !paste.includes(",");
 
 				if (config.booru) {
 					paste = LeFormatter.toNetwork(paste);
@@ -303,12 +303,11 @@ class LeFormatter {
 					paste = LeFormatter.fromNetwork(paste);
 				}
 
-				if (multiline) paste = LeFormatter.formatString(paste, config.dedupe, config.rmUnderscore);
+				if (onlyTags) paste = LeFormatter.formatString(paste, config.dedupe, config.rmUnderscore);
 				else {
 					const lines = [];
 					for (const line of paste.split("\n")) lines.push(LeFormatter.formatString(line, config.dedupe, config.rmUnderscore));
-					paste = lines.filter((l) => l).join("\n");
-					if (!paste.includes(",")) paste = paste.replaceAll("\n", ", ");
+					paste = lines.join("\n");
 				}
 
 				paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`;
