@@ -206,11 +206,11 @@ class LeFormatter {
 	static #rmUnderscore(input) {
 		if (!input.trim()) return "";
 
-		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(this.#cards[i], `@TEXTUAL${i}INVERSION@`);
+		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(this.#cards[i], `@T${i}I@`);
 
-		input = input.replaceAll("_", " ");
+		input = input.replace(/(^|[^_])_([^_]|$)/g, "$1 $2");
 
-		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(`@TEXTUAL${i}INVERSION@`, this.#cards[i]);
+		for (let i = 0; i < this.#cards.length; i++) input = input.replaceAll(`@T${i}I@`, this.#cards[i]);
 
 		return input;
 	}
