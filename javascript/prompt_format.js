@@ -36,7 +36,8 @@ class LeFormatter {
 			textArea.value = val
 				.replace(/\n,\n/g, "\n\n")
 				.replace(/\>,\n/g, ">\n")
-				.replace(/\s*,\s*$/g, "");
+				.replace(/\s*,\s*$/g, "")
+				.replace(/\.,(\s)/g, ".$1");
 		}
 
 		if (autoRefresh) updateInput(textArea);
@@ -145,9 +146,6 @@ class LeFormatter {
 
 		// Remove empty before Colon
 		input = input.replace(/,\s*:(\d)/g, ":$1");
-
-		// Period instead of Comma
-		input = input.replaceAll(".,", ".");
 
 		input = this.#fromExpression(input);
 
