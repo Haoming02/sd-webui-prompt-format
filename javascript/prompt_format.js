@@ -1,4 +1,6 @@
 class LeFormatter {
+	// #region Alias & Cards
+
 	static #aliasData = null;
 	static #cardsData = null;
 
@@ -17,6 +19,8 @@ class LeFormatter {
 		return (this.#cardsData ??= pfConfigs.cacheCards());
 	}
 
+	// #region Pipeline
+
 	/**
 	 * @param {HTMLTextAreaElement} textArea
 	 * @param {boolean} dedupe
@@ -34,14 +38,17 @@ class LeFormatter {
 		else {
 			const val = lines.join(",\n");
 			textArea.value = val
-				.replace(/\n,\n/g, "\n\n")
-				.replace(/\>,\n/g, ">\n")
-				.replace(/\s*,\s*$/g, "")
-				.replace(/\.,(\s)/g, ".$1");
+				.replace(/\n,\n/g, "\n\n") // Empty Line
+				.replace(/[,\s]*$/g, "") // Last Line
+				.replace(/\>\s*,\n/g, ">\n") // Network Ending
+				.replace(/\.\s*,\n/g, ".\n") // Period Ending
+				.replace(/(AND|BREAK|ADDROW|ADDCOL)\s*,\n/g, "$1\n"); // Keyword
 		}
 
 		if (autoRefresh) updateInput(textArea);
 	}
+
+	// #region Expression
 
 	/** @param {string} input @returns {string} */
 	static #toExpression(input) {
@@ -57,11 +64,13 @@ class LeFormatter {
 			.replace("$CAT$", ":3");
 	}
 
+	// #region Network
+
 	/** @type {Map<string, string>} */
 	static #networkDB = new Map();
 
 	/** @param {string} input @returns {string} */
-	static toNetwork(input) {
+	static #toNetwork(input) {
 		this.#networkDB.clear();
 
 		const output = input
@@ -80,7 +89,7 @@ class LeFormatter {
 	}
 
 	/** @param {string} input @returns {string} */
-	static fromNetwork(input) {
+	static #fromNetwork(input) {
 		const len = this.#networkDB.size;
 
 		for (let i = len; i >= 0; i--) {
@@ -91,13 +100,15 @@ class LeFormatter {
 		return input;
 	}
 
+	// #region Main
+
 	/** @param {string} input @param {boolean} dedupe @param {boolean} rmUnderscore @returns {string} */
 	static formatString(input, dedupe, rmUnderscore) {
 		// Remove Whitespaces
 		input = input.replace(/[^\S\n]/g, " ");
 
 		// Substitute LoRAs
-		input = this.toNetwork(input);
+		input = this.#toNetwork(input);
 
 		// Remove Underscore
 		input = rmUnderscore ? this.#rmUnderscore(input) : input;
@@ -106,7 +117,7 @@ class LeFormatter {
 		input = this.#toExpression(input);
 
 		// Restore LoRAs
-		input = this.fromNetwork(input);
+		input = this.#fromNetwork(input);
 
 		// Fix Bracket & Space
 		input = input.replace(/\s+(\)|\]|\>|\})/g, "$1").replace(/(\(|\[|\<|\{)\s+/g, "$1");
@@ -116,6 +127,12 @@ class LeFormatter {
 
 		// Remove Space around Syntax
 		input = input.replace(/\s*\|\s*/g, "|").replace(/\s*\:\s*/g, ":");
+
+		// Remove Comma before Period
+		input = input.replace(/\,\s*\./g, ".");
+
+		// Remove Space before last Period
+		input = input.replace(/\s*\.(\n|$)/g, ".$1");
 
 		// Sentence -> Tags
 		let tags = input.split(",").map((word) => word.trim());
@@ -129,7 +146,7 @@ class LeFormatter {
 		// Remove Empty Brackets
 		while (/\(\s*\)|\[\s*\]/.test(input)) input = input.replace(/\(\s*\)|\[\s*\]/g, "");
 
-		// Space after Comma in Escaped Brackets (for franchise)
+		// Space after Colon in Escaped Brackets for Franchise (due to "Remove Space around Syntax")
 		input = input.replace(/\\\(([^\\\)]+?):([^\\\)]+?)\\\)/g, "\\($1: $2\\)");
 
 		// Prune empty Chunks
@@ -144,7 +161,7 @@ class LeFormatter {
 			return match.replace(/\,\s+/g, ",");
 		});
 
-		// Remove empty before Colon
+		// Remove Space before Colon
 		input = input.replace(/,\s*:(\d)/g, ":$1");
 
 		input = this.#fromExpression(input);
@@ -152,9 +169,11 @@ class LeFormatter {
 		return input;
 	}
 
+	// #region Dedupe
+
 	/** @param {string[]} input @returns {string[]} */
 	static #dedupe(input) {
-		const KEYWORD = /^(AND|BREAK)$/;
+		const KEYWORD = /^(AND|BREAK|ADDROW|ADDCOL)$/;
 		const uniqueSet = new Set();
 		const results = [];
 
@@ -200,6 +219,8 @@ class LeFormatter {
 		return results;
 	}
 
+	// #region Underscore
+
 	/** @param {string} input @returns {string} */
 	static #rmUnderscore(input) {
 		if (!input.trim()) return "";
@@ -212,21 +233,74 @@ class LeFormatter {
 
 		return input;
 	}
+
+	// #region Paste
+
+	/** @param {HTMLTextAreaElement} field @param {pfConfigs} config */
+	static processPaste(field, config) {
+		/** https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/v1.10.1/modules/infotext_utils.py#L16 */
+		const paramPatterns = /\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
+
+		field.addEventListener("paste", (event) => {
+			/** @type {string} */ let paste = (event.clipboardData || window.clipboardData).getData("text");
+			if ([...paste.matchAll(paramPatterns)].length > 3) return; // Infotext
+
+			event.preventDefault();
+
+			/** @type {boolean} */ const commaStart = paste.match(/^\s*\,/);
+			/** @type {boolean} */ const commaEnd = paste.match(/\,\s*$/);
+
+			/** @type {boolean} */ const onlyTags = !paste.includes(",");
+
+			if (config.booru) {
+				paste = this.#toNetwork(paste);
+				paste = paste.replace(/\s*[\d.]+[kM]\s*|(?:^|,|\s+)\d+(?:\s+|,|\?|$)|[\?\+\-]\s+/g, ", ");
+				for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
+					paste = paste.replace(excl, "");
+
+				const franchise = /\w+(?:[\_\s]\(.+?\))+/g;
+				paste = paste.replace(franchise, (match) => {
+					return match.replace(/[()]/g, "\\$&");
+				});
+				paste = this.#fromNetwork(paste);
+			}
+
+			if (onlyTags) paste = this.formatString(paste, config.dedupe, config.rmUnderscore);
+			else {
+				const lines = [];
+				for (const line of paste.split("\n")) lines.push(this.formatString(line, config.dedupe, config.rmUnderscore));
+				paste = lines.join("\n");
+			}
+
+			paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`;
+
+			const currentText = field.value;
+			const cursorPosition = field.selectionStart;
+
+			const newText = currentText.slice(0, cursorPosition) + paste + currentText.slice(field.selectionEnd);
+			field.value = newText;
+			field.selectionStart = field.selectionEnd = cursorPosition + paste.length;
+
+			updateInput(field);
+			return false;
+		});
+	}
 }
+
+// #region Entry
 
 (function () {
 	onUiLoaded(() => {
 		const config = new pfConfigs();
 		const formatter = pfUI.setupUIs(config.autoRun, config.dedupe, config.rmUnderscore);
 
-		for (const field of config.promptFields) {
-			field.addEventListener("keydown", (e) => {
-				if (e.altKey && e.shiftKey && e.code === "KeyF") {
-					e.preventDefault();
+		document.addEventListener("keydown", (e) => {
+			if (e.altKey && e.shiftKey && e.code === "KeyF") {
+				e.preventDefault();
+				for (const field of config.promptFields)
 					LeFormatter.formatPipeline(field, config.dedupe, config.rmUnderscore, config.refresh, config.comma);
-				}
-			});
-		}
+			}
+		});
 
 		formatter.auto.addEventListener("change", () => {
 			config.autoRun = formatter.auto.checked;
@@ -272,54 +346,6 @@ class LeFormatter {
 		}
 
 		if (!config.paste) return;
-
-		/** https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/v1.10.1/modules/infotext_utils.py#L16 */
-		const paramPatterns = /\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)/g;
-
-		for (const field of config.promptFields) {
-			field.addEventListener("paste", (event) => {
-				/** @type {string} */ let paste = (event.clipboardData || window.clipboardData).getData("text");
-				if ([...paste.matchAll(paramPatterns)].length > 3) return; // Infotext
-
-				event.preventDefault();
-
-				/** @type {boolean} */ const commaStart = paste.match(/^\s*\,/);
-				/** @type {boolean} */ const commaEnd = paste.match(/\,\s*$/);
-
-				/** @type {boolean} */ const onlyTags = !paste.includes(",");
-
-				if (config.booru) {
-					paste = LeFormatter.toNetwork(paste);
-					paste = paste.replace(/\s*[\d.]+[kM]\s*|(?:^|,|\s+)\d+(?:\s+|,|\?|$)|[\?\+\-]\s+/g, ", ");
-					for (const excl of ["Artist", "Characters", "Character", "Copyright", "Tags", "Tag", "General"])
-						paste = paste.replace(excl, "");
-
-					const name_franchise = /\w+?[\_\s]\(.*?\)/g;
-					paste = paste.replace(name_franchise, (match) => {
-						return match.replace(/[()]/g, "\\$&");
-					});
-					paste = LeFormatter.fromNetwork(paste);
-				}
-
-				if (onlyTags) paste = LeFormatter.formatString(paste, config.dedupe, config.rmUnderscore);
-				else {
-					const lines = [];
-					for (const line of paste.split("\n")) lines.push(LeFormatter.formatString(line, config.dedupe, config.rmUnderscore));
-					paste = lines.join("\n");
-				}
-
-				paste = `${commaStart ? ", " : ""}${paste}${commaEnd ? ", " : ""}`;
-
-				const currentText = field.value;
-				const cursorPosition = field.selectionStart;
-
-				const newText = currentText.slice(0, cursorPosition) + paste + currentText.slice(field.selectionEnd);
-				field.value = newText;
-				field.selectionStart = field.selectionEnd = cursorPosition + paste.length;
-
-				updateInput(field);
-				return false;
-			});
-		}
+		for (const field of config.promptFields) LeFormatter.processPaste(field, config);
 	});
 })();
