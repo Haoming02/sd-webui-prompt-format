@@ -14,51 +14,46 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
 - [x] Works in both `txt2img` and `img2img`
 - [x] Works in both `Positive` and `Negative`, as well as `Hires. fix` prompts
 - [x] Remove extra **spaces** and **commas**
-- [x] Fix misplaced **brackets** and **commas**
+- [x] Fix misplaced **brackets**, **commas**, and **periods**
 - [x] Enable `Remove Duplicates` to remove identical tags found in the prompts
-  - **Note:** Only works for tag-based prompt, not sentence-based prompt
+  - Only checks within the same line
+  - Only works for tag-based prompt, not sentence-based prompt
     - **e.g.** `1girl, solo, smile, 1girl` will become `1girl, solo, smile`
     - **e.g.** `a girl smiling, a girl standing` will not be changed
 - [x] Enable `Remove Underscores` to replace `_` with `space`
-- [x] Respect line breaks
-  - `Remove Duplicates` only checks within the same line
 - [x] Append a comma every line break
 - [x] Toggle between auto formatting and manual formatting
-  - In `Auto` mode: The process is ran whenever you click on **Generate**
-  - In `Manual` mode: The process is only ran when you click the **Format** button
-- [x] Pressing `Alt` + `Shift` + `F` can also manually trigger formatting
+  - In `Auto` mode: The process is ran whenever you click **Generate**
+  - In `Manual` mode: The process is only ran when you click on the **Format** button
+- [x] Press `Alt` + `Shift` + `F` to manually trigger formatting
 - [x] Format the text pasted from clipboard
-
-<br>
-
-- [x] Toggle whether the above features are enabled / disabled by default in the `Prompt Format` section under the <ins>System</ins> category of the **Settings** tab
-- [x] Exclude specific tags from `Remove Underscores`
-- [x] Assign "[alias](#tag-alias)" that counts as duplicates for the specified tags
-- [x] Click `Reload` to refresh the 2 settings above
-
-> [!Note]
-> Some Extensions *(**eg.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, meaning the formatting will cause them to be triggered. You can disable updating the actual prompts in the settings to prevent this.
-
-<details>
-<summary><b>Booru</b></summary>
-
-- [x] Clean up unwanted texts when pasting tags from Booru sites
-  - Currently supports [gelbooru](https://gelbooru.com/) and [danbooru](https://safebooru.donmai.us/)
+  - [x] Clean up unwanted texts when pasting from Booru sites
+    - supports [danbooru](https://safebooru.donmai.us/) and [gelbooru](https://gelbooru.com/)
 
 <p align="center"><img src="booru.png" width=512></p>
 
-</details>
+## Settings
 
-<br>
+> The settings are in the `Prompt Format` section under the <ins>System</ins> category
 
-### Tag Alias
-- You can assign other tags that count as the same as the main tag, which then get removed during `Remove Duplicates`
-- The syntax is in the format of `main tag: alias1, alias2, alias3`
-  - **example:**
-    ```
-    1girl: girl, woman, lady
-    ```
-    - If you type `girl`, it will get converted into `1girl`, which will get removed if the prompt already contains `1girl`
+- [x] Enable / Disable the above Features
+- [x] Exclude specific tags from `Remove Underscores`
+- [x] Assign "[alias](#tag-alias)" that count as duplicates
 
-- The pattern for alias uses **Regular Expression**, so certain symbols *(**e.g.** `(`, `)`)* will need to be escaped *(**i.e.** `\(`, `\)`)*
-  - Comma is not supported, as it is used to separate multiple patterns
+> [!Tip]
+> Click the `Reload` button to refresh the **Exclusion**, **Alias**, **LoRA** names, and **Embedding** names
+
+> [!Note]
+> Some Extensions *(**e.g.** [tagcomplete](https://github.com/DominikDoom/a1111-sd-webui-tagcomplete))* listen to the text editing event, meaning the formatting will cause them to be triggered. You can disable updating the actual prompts in the settings to prevent this.
+
+## Tag Alias
+- You can assign words to be automatically replaced with the specified tag
+- As a result, they can then be removed during `Remove Duplicates` if needed
+- The syntax is in the format of `tag:regex`
+- The pattern for alias uses **Regular Expression**
+- **Example:**
+  ```
+  1girl:girl|woman|lady
+  ```
+  - When you type `girl`, it will get converted into `1girl`
+  - Which will get removed if the prompt already contains `1girl`
