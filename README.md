@@ -57,3 +57,6 @@ Sometimes, when you type too fast or copy prompts from all over the places, you 
   ```
   - When you type `girl`, it will get converted into `1girl`
   - Which will get removed if the prompt already contains `1girl`
+
+> [!Note]
+> The pattern will be wrapped in `^(regex)$`

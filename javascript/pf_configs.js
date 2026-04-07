@@ -69,10 +69,15 @@ class pfConfigs {
 
         for (const line of config.split("\n")) {
             const [tag, words] = line.split(":");
-            const pattern = new RegExp(words);
+            const pattern = this.#parseRegExp(words);
             alias.set(pattern, tag);
         }
 
         return alias;
+    }
+
+    /** @param {string} input @returns {RegExp} */
+    static #parseRegExp(input) {
+        return new RegExp(`^(${input})$`);
     }
 }
