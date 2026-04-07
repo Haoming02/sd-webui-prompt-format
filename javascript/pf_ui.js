@@ -1,10 +1,10 @@
 class pfUI {
-	/** @param {string} text @param {string} tip @returns {HTMLButtonElement} */
-	static #button(text, tip) {
+	/** @param {string} text @param {string} hint @returns {HTMLButtonElement} */
+	static #button(text, hint) {
 		const button = document.createElement("button");
 		button.classList.add(["lg", "secondary", "gradio-button"]);
 		button.textContent = text;
-		if (tip) button.title = tip;
+		if (hint) button.title = hint;
 		return button;
 	}
 
@@ -14,10 +14,8 @@ class pfUI {
 		label.classList.add("pf-checkbox");
 		label.removeAttribute("id");
 
-		const checkbox = label.children[0];
-		checkbox.checked = value;
-		const span = label.children[1];
-		span.textContent = text;
+		label.children[0].checked = value;
+		label.children[1].textContent = text;
 
 		return label;
 	}
@@ -27,14 +25,14 @@ class pfUI {
 		const formatter = document.createElement("div");
 		formatter.id = "le-formatter";
 
+		const autoCB = this.#checkbox(autoRun, "Auto Format");
+		const dedupeCB = this.#checkbox(dedupe, "Remove Duplicates");
+		const underscoreCB = this.#checkbox(rmUnderscore, "Remove Underscores");
+
 		const manualBtn = this.#button("Format", "Manually Format the Prompts");
 		manualBtn.style.display = autoRun ? "none" : "flex";
 		const refreshBtn = this.#button("Reload", "Reload Exclusion & Alias");
 		refreshBtn.style.display = rmUnderscore ? "flex" : "none";
-
-		const autoCB = this.#checkbox(autoRun, "Auto Format");
-		const dedupeCB = this.#checkbox(dedupe, "Remove Duplicates");
-		const underscoreCB = this.#checkbox(rmUnderscore, "Remove Underscores");
 
 		formatter.appendChild(autoCB);
 		formatter.appendChild(manualBtn);
@@ -42,11 +40,11 @@ class pfUI {
 		formatter.appendChild(underscoreCB);
 		formatter.appendChild(refreshBtn);
 
-		formatter.manual = manualBtn;
-		formatter.refresh = refreshBtn;
 		formatter.auto = autoCB.children[0];
+		formatter.manual = manualBtn;
 		formatter.dedupe = dedupeCB.children[0];
 		formatter.underscore = underscoreCB.children[0];
+		formatter.refresh = refreshBtn;
 
 		return formatter;
 	}

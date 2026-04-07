@@ -52,9 +52,11 @@ class pfConfigs {
 
     /** @returns {string[]} */
     static cacheCards() {
-        const cards = document.getElementById("pf_embeddings").querySelector("textarea").value.split("\n");
-        const config = document.getElementById("setting_pf_exclusion").querySelector("textarea").value;
-        for (const tag of config.split(",").map((t) => t.trim())) if (tag) cards.push(tag);
+        const cards = new Set();
+        const embeddings = document.getElementById("pf_embeddings").querySelector("textarea").value;
+        for (const tag of embeddings.split("\n").map((t) => t.trim())) if (tag) cards.add(tag);
+        const settings = document.getElementById("setting_pf_exclusion").querySelector("textarea").value;
+        for (const tag of settings.split(",").map((t) => t.trim())) if (tag) cards.add(tag);
         return cards;
     }
 
@@ -67,21 +69,10 @@ class pfConfigs {
 
         for (const line of config.split("\n")) {
             const [tag, words] = line.split(":");
-            const mainTag = tag.trim();
-
-            for (const word of words.split(",").map((part) => part.trim())) {
-                if (word === mainTag) continue;
-
-                const pattern = this.#parseRegExp(word);
-                alias.set(pattern, mainTag);
-            }
+            const pattern = new RegExp(words);
+            alias.set(pattern, tag);
         }
 
         return alias;
-    }
-
-    /** @param {string} input @returns {RegExp} */
-    static #parseRegExp(input) {
-        return new RegExp(`^${input.trimStart("^").trimEnd("$")}$`);
     }
 }

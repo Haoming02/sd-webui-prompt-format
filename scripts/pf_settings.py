@@ -62,58 +62,28 @@ def on_settings():
         .needs_reload_ui(),
     )
 
-    opts.add_option(
-        "pf_startinauto",
-        OptionInfo(
-            True, "Launch the WebUI with Auto Format enabled", **args
-        ).needs_reload_ui(),
-    )
+    for label, desc in [
+        ("pf_startinauto", 'Launch the WebUI with "Auto Format" enabled'),
+        ("pf_startwithdedupe", 'Launch the WebUI with "Remove Duplicates" enabled'),
+        ("pf_startwithrmudscr", 'Launch the WebUI with "Remove Underscores" enabled'),
+        ("pf_appendcomma", "Append a comma at the end of each line"),
+        ("pf_onpaste", "Format the texts pasted from clipboard"),
+        ("pf_booru", 'Process the "Booru Structure" on Paste'),
+    ]:
+        opts.add_option(label, OptionInfo(True, desc, **args).needs_reload_ui())
 
-    opts.add_option(
-        "pf_startwithdedupe",
-        OptionInfo(
-            True, "Launch the WebUI with Remove Duplicates enabled", **args
-        ).needs_reload_ui(),
-    )
-
-    opts.add_option(
-        "pf_startwithrmudscr",
-        OptionInfo(
-            True, "Launch the WebUI with Remove Underscores enabled", **args
-        ).needs_reload_ui(),
-    )
-
-    opts.add_option(
-        "pf_appendcomma",
-        OptionInfo(True, "Append a comma at the end of each line", **args)
-        .info("only take effect when there are more than 1 line")
-        .needs_reload_ui(),
-    )
-
-    opts.add_option(
-        "pf_onpaste",
-        OptionInfo(
-            False, "Format the texts pasted from clipboard", **args
-        ).needs_reload_ui(),
-    )
-
-    opts.add_option(
-        "pf_booru",
-        OptionInfo(False, 'Process the "Booru Structure"', **args)
-        .info("only take effect when the above option is enabled")
-        .needs_reload_ui(),
-    )
+    _SCORE = "score_1, score_2, score_3, score_7, score_8, score_9"
 
     opts.add_option(
         "pf_exclusion",
         OptionInfo(
-            default="",
-            label="Tags excluded from Remove Underscores",
+            default=_SCORE,
+            label='Tags to exclude from "Remove Underscores"',
             component=Textbox,
             component_args={
-                "placeholder": "score_9, score_8_up, score_7_up",
-                "max_lines": 4,
+                "placeholder": _SCORE,
                 "lines": 1,
+                "max_lines": 2,
             },
             **args,
         ).info("requires <b>Reload</b> button"),
@@ -123,20 +93,17 @@ def on_settings():
         "pf_alias",
         OptionInfo(
             default="",
-            label="Tag Alias for Remove Duplicates",
+            label='Tag Alias for "Remove Duplicates"',
             component=Textbox,
             component_args={
-                "placeholder": "1girl: girl, woman, lady\nadult: \\d+\\s*(y\\.?o\\.?|[Yy]ear[s]? [Oo]ld)",
+                "placeholder": "1girl:girl|woman|lady",
                 "max_lines": 8,
                 "lines": 2,
             },
             **args,
         )
         .info("requires <b>Reload</b> button")
-        .link(
-            "Regexper",
-            "https://regexper.com/#%5Cd%2B%5Cs*%28y%5C.%3Fo%5C.%3F%7C%5BYy%5Dear%5Bs%5D%3F%20%5BOo%5Dld%29",
-        ),
+        .link("RegExr", "https://regexr.com/"),
     )
 
 
