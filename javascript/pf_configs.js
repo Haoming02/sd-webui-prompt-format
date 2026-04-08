@@ -57,7 +57,7 @@ class pfConfigs {
         for (const tag of embeddings.split("\n").map((t) => t.trim())) if (tag) cards.add(tag);
         const settings = document.getElementById("setting_pf_exclusion").querySelector("textarea").value;
         for (const tag of settings.split(",").map((t) => t.trim())) if (tag) cards.add(tag);
-        return cards;
+        return [...cards];
     }
 
     /** @returns {{RegExp: string}} */
