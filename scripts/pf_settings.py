@@ -54,11 +54,11 @@ def on_settings():
     opts.add_option(
         "pf_disableupdateinput",
         OptionInfo(False, "Disable the automatic updates of the prompts", **args)
-        .info(
-            """enable this if you have Extensions, such as
+        .info("""
+            enable this if you have Extensions, such as
             <a href="https://github.com/DominikDoom/a1111-sd-webui-tagcomplete">tagcomplete</a>,
-            that subscribe to text editing events"""
-        )
+            that subscribe to text editing events
+        """)
         .needs_reload_ui(),
     )
 

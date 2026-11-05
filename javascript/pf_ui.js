@@ -2,7 +2,7 @@ class pfUI {
 	/** @param {string} text @param {string} hint @returns {HTMLButtonElement} */
 	static #button(text, hint) {
 		const button = document.createElement("button");
-		button.classList.add(["lg", "secondary", "gradio-button"]);
+		button.classList.add("lg", "secondary", "gradio-button");
 		button.textContent = text;
 		if (hint) button.title = hint;
 		return button;

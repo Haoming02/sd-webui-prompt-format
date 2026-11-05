@@ -1,14 +1,14 @@
 class pfConfigs {
     constructor() {
-		/** @type {HTMLTextAreaElement[]} */ this.promptFields = this.#getPromptFields();
+    /** @type {HTMLTextAreaElement[]} */ this.promptFields = this.#getPromptFields();
 
-		/** @type {boolean} */ this.refresh = !this.#getConfig("setting_pf_disableupdateinput");
-		/** @type {boolean} */ this.autoRun = this.#getConfig("setting_pf_startinauto");
-		/** @type {boolean} */ this.dedupe = this.#getConfig("setting_pf_startwithdedupe");
-		/** @type {boolean} */ this.rmUnderscore = this.#getConfig("setting_pf_startwithrmudscr");
-		/** @type {boolean} */ this.comma = this.#getConfig("setting_pf_appendcomma");
-		/** @type {boolean} */ this.paste = this.#getConfig("setting_pf_onpaste");
-		/** @type {boolean} */ this.booru = this.#getConfig("setting_pf_booru");
+    /** @type {boolean} */ this.refresh = !this.#getConfig("setting_pf_disableupdateinput");
+    /** @type {boolean} */ this.autoRun = this.#getConfig("setting_pf_startinauto");
+    /** @type {boolean} */ this.dedupe = this.#getConfig("setting_pf_startwithdedupe");
+    /** @type {boolean} */ this.rmUnderscore = this.#getConfig("setting_pf_startwithrmudscr");
+    /** @type {boolean} */ this.comma = this.#getConfig("setting_pf_appendcomma");
+    /** @type {boolean} */ this.paste = this.#getConfig("setting_pf_onpaste");
+    /** @type {boolean} */ this.booru = this.#getConfig("setting_pf_booru");
     }
 
     #getConfig(id) {
@@ -34,10 +34,7 @@ class pfConfigs {
             if (textArea != null) textareas.push(textArea);
         }
 
-        const ADetailer = [
-            "script_txt2img_adetailer_ad_main_accordion",
-            "script_img2img_adetailer_ad_main_accordion",
-        ];
+        const ADetailer = ["script_txt2img_adetailer_ad_main_accordion", "script_img2img_adetailer_ad_main_accordion"];
 
         for (const id of ADetailer) {
             const fields = document.getElementById(id)?.querySelectorAll("textarea");
@@ -52,15 +49,13 @@ class pfConfigs {
 
     /** @returns {string[]} */
     static cacheCards() {
-        const cards = new Set();
-        const embeddings = document.getElementById("pf_embeddings").querySelector("textarea").value;
-        for (const tag of embeddings.split("\n").map((t) => t.trim())) if (tag) cards.add(tag);
-        const settings = document.getElementById("setting_pf_exclusion").querySelector("textarea").value;
-        for (const tag of settings.split(",").map((t) => t.trim())) if (tag) cards.add(tag);
-        return [...cards];
+        const embeddings = document.getElementById("pf_embeddings").querySelector("textarea").value.split("\n");
+        const exclusions = document.getElementById("setting_pf_exclusion").querySelector("textarea").value.split(",");
+        const cards = [...embeddings, ...exclusions].map((t) => t.trim()).filter((t) => t);
+        return [...new Set(cards)];
     }
 
-    /** @returns {{RegExp: string}} */
+    /** @returns {Map<RegExp, string>} */
     static getTagAlias() {
         const alias = new Map();
 
@@ -69,15 +64,9 @@ class pfConfigs {
 
         for (const line of config.split("\n")) {
             const [tag, words] = line.split(":");
-            const pattern = this.#parseRegExp(words);
-            alias.set(pattern, tag);
+            alias.set(new RegExp(`^(${words})$`), tag);
         }
 
         return alias;
-    }
-
-    /** @param {string} input @returns {RegExp} */
-    static #parseRegExp(input) {
-        return new RegExp(`^(${input})$`);
     }
 }
